@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEMS HR — Web UI Prototype</title>
+<style>
+:root{
+  --bg:#f4f6fa; --surface:#ffffff; --surface-2:#f8fafc; --line:#e4e8f0; --line-2:#d5dce8;
+  --text:#1a2233; --text-2:#5b6779; --text-3:#8a94a6;
+  --brand:#1f7a5a; --brand-2:#2a9d78; --brand-soft:#e8f5f0;
+  --accent:#2f5fd0; --accent-soft:#eaf0fd;
+  --warn:#c2410c; --warn-soft:#fff2e8;
+  --danger:#c0392b; --danger-soft:#fdeceb;
+  --ok:#1f7a5a; --ok-soft:#e8f5f0;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.05);
+  --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+button{font:inherit}
+input,select,textarea{font:inherit;color:var(--text)}
+
+/* ---------- top bar ---------- */
+.topbar{background:linear-gradient(180deg,#1f7a5a,#186349);color:#fff;position:sticky;top:0;z-index:40}
+.topbar-inner{max-width:1560px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:22px;height:56px}
+.brand{display:flex;align-items:baseline;gap:8px;font-weight:700;letter-spacing:.5px;font-size:19px}
+.brand small{font-weight:400;font-size:10.5px;opacity:.75;letter-spacing:.3px}
+.topnav{display:flex;gap:2px;margin-left:14px}
+.topnav button{background:none;border:0;color:#d9ece4;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:13.5px;font-weight:500}
+.topnav button:hover{background:rgba(255,255,255,.12);color:#fff}
+.topnav button.on{background:rgba(255,255,255,.18);color:#fff}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:12.5px;color:#cfe6dc}
+.topbar-right .clock{font-variant-numeric:tabular-nums;opacity:.85}
+.topbar-right a{color:#eaf6f1}
+.announce{background:#155041;color:#d5ece2;font-size:12.5px;text-align:center;padding:6px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.announce span{direction:rtl;unicode-bidi:isolate}
+
+/* ---------- layout ---------- */
+.shell{max-width:1560px;margin:0 auto;padding:18px 20px 60px;display:grid;grid-template-columns:236px 1fr;gap:18px;align-items:start}
+.side{position:sticky;top:74px;display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-h{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--line);background:var(--surface-2)}
+.panel-b{padding:12px 14px}
+.side-link{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:0;padding:9px 14px;cursor:pointer;color:var(--text-2);font-size:13.5px;border-left:3px solid transparent}
+.side-link:hover{background:var(--surface-2);color:var(--text)}
+.side-link.on{background:var(--brand-soft);color:var(--brand);border-left-color:var(--brand);font-weight:600}
+.side-link .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;flex:none}
+.wp-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;font-weight:600}
+
+/* ---------- page ---------- */
+.page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.page-title{font-size:21px;font-weight:650;margin:0;letter-spacing:-.2px}
+.page-sub{color:var(--text-2);font-size:13px;margin:3px 0 0}
+.code-badge{font-family:var(--mono);font-size:11px;background:var(--accent-soft);color:var(--accent);border:1px solid #cfdcfa;padding:3px 8px;border-radius:6px;font-weight:600;white-space:nowrap}
+.page-head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:var(--radius) var(--radius) 0 0}
+.card-h h3{margin:0;font-size:13.5px;font-weight:650;letter-spacing:.1px}
+.card-h .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.card-b{padding:16px}
+.card-b.tight{padding:0}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);margin:22px 0 10px}
+.section-label:first-child{margin-top:0}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:#fff;color:var(--text);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:550;transition:.12s}
+.btn:hover{background:var(--surface-2);border-color:#c3ccdb}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:#186349;border-color:#186349}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-accent:hover{background:#2650b4;border-color:#2650b4}
+.btn-warn{background:var(--warn);border-color:var(--warn);color:#fff}
+.btn-warn:hover{background:#a33509}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn-ghost{background:none;border-color:transparent;color:var(--text-2)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12.5px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-size:13px;font-weight:550}
+.linkbtn:hover{text-decoration:underline}
+
+/* ---------- forms ---------- */
+.grid-form{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 18px}
+.grid-form.c3{grid-template-columns:repeat(3,1fr)}
+.grid-form.c2{grid-template-columns:repeat(2,1fr)}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f label{font-size:12px;color:var(--text-2);font-weight:600;display:flex;align-items:center;gap:5px}
+.f .req{color:var(--danger);font-weight:700}
+.f input[type=text],.f input[type=number],.f input[type=date],.f select,.f textarea{
+  border:1px solid var(--line-2);background:#fff;border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;width:100%;outline:none;transition:.12s}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.f input:disabled,.f select:disabled,.f input[readonly]{background:#f1f3f7;color:var(--text-2);cursor:not-allowed}
+.f .hint{font-size:11px;color:var(--text-3)}
+.f.rtl input{direction:rtl;text-align:right}
+.radio-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding-top:2px}
+.radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;font-weight:450}
+.derived{background:var(--accent-soft);border:1px dashed #bcd0f7;color:#20458f;font-size:10.5px;padding:1px 6px;border-radius:5px;font-weight:650}
+.ro-tag{background:#eef1f6;color:var(--text-3);font-size:10.5px;padding:1px 6px;border-radius:5px;font-weight:650}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto}
+table.grid{width:100%;border-collapse:collapse;font-size:13px}
+table.grid th{background:var(--surface-2);text-align:left;padding:10px 12px;font-size:11.5px;font-weight:700;color:var(--text-2);letter-spacing:.3px;border-bottom:1px solid var(--line);white-space:nowrap;position:relative}
+table.grid th.sorted::after{content:'▲';font-size:8px;margin-left:6px;color:var(--accent)}
+table.grid td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.grid tbody tr:hover{background:#fafcff}
+table.grid tr.filters td{padding:6px 8px;background:#fcfdff}
+table.grid tr.filters input,table.grid tr.filters select{width:100%;border:1px solid var(--line);border-radius:5px;padding:5px 7px;font-size:12px;background:#fff}
+table.grid tfoot td{background:var(--surface-2);font-weight:700;border-top:2px solid var(--line-2)}
+.empty{padding:34px;text-align:center;color:var(--text-3);font-size:13px}
+.avatar{width:34px;height:34px;border-radius:7px;background:#e8ecf3;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:10px;font-weight:700;overflow:hidden}
+.avatar.has{background:linear-gradient(135deg,#c8d6ea,#9fb4d0);color:#fff}
+.icon-btn{border:1px solid var(--line-2);background:#fff;width:30px;height:30px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent)}
+.icon-btn:hover{background:var(--accent-soft);border-color:#bcd0f7}
+.pager{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line);background:var(--surface-2);font-size:12.5px;color:var(--text-2);flex-wrap:wrap}
+.pager .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pg{min-width:28px;height:28px;border:1px solid var(--line-2);background:#fff;border-radius:6px;cursor:pointer;font-size:12.5px}
+.pg.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
+.groupbar{padding:9px 14px;background:#fbfcfe;border-bottom:1px solid var(--line);font-size:12px;color:var(--text-3);font-style:italic}
+.searchbar{padding:10px 14px;border-bottom:1px solid var(--line)}
+.searchbar input{width:100%;max-width:420px;border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:8px 11px;font-size:13px}
+
+/* ---------- pills / status ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:650;letter-spacing:.2px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--danger-soft);color:var(--danger)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.mute{background:#eef1f6;color:var(--text-2)}
+
+/* ---------- employee summary card ---------- */
+.emp-card{display:grid;grid-template-columns:1fr 150px;gap:18px}
+.emp-kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.emp-kv .k{background:#eef3f8;padding:9px 12px;font-size:11.5px;font-weight:700;color:#33506d;letter-spacing:.2px}
+.emp-kv .v{background:#fff;padding:9px 12px;font-size:13px}
+.emp-photo{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-3);font-size:12px;padding:14px;text-align:center}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 8px;overflow-x:auto;background:var(--surface);border-radius:var(--radius) var(--radius) 0 0}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:12px 15px;cursor:pointer;color:var(--text-2);font-size:13px;font-weight:550;white-space:nowrap}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:650}
+
+/* ---------- criteria ---------- */
+.crit{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px}
+.crit-radios{display:grid;grid-template-columns:repeat(4,1fr);gap:9px 16px;margin-bottom:14px}
+.crit-radios label{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;color:var(--text)}
+.or-sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text-3);font-size:11px;font-weight:800;letter-spacing:1px}
+.or-sep::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ---------- notes drawer ---------- */
+.notes{position:fixed;top:0;right:0;bottom:0;width:400px;background:#fff;border-left:1px solid var(--line);box-shadow:-8px 0 30px rgba(16,24,40,.12);z-index:60;transform:translateX(102%);transition:.22s ease;display:flex;flex-direction:column}
+.notes.open{transform:none}
+.notes-h{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.notes-h h4{margin:0;font-size:14px}
+.notes-b{padding:16px 18px;overflow:auto;font-size:13px;line-height:1.55}
+.note{border-left:3px solid var(--line-2);padding:2px 0 2px 11px;margin-bottom:13px;color:var(--text-2)}
+.note.tbd{border-left-color:#c2410c}
+.note.asm{border-left-color:#2f5fd0}
+.note.conf{border-left-color:#c0392b}
+.note b{color:var(--text);font-weight:650}
+.note .tag{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;margin-right:6px;font-weight:700}
+.tag.tbd{background:var(--warn-soft);color:var(--warn)}
+.tag.asm{background:var(--accent-soft);color:var(--accent)}
+.tag.conf{background:var(--danger-soft);color:var(--danger)}
+.backdrop{position:fixed;inset:0;background:rgba(16,24,40,.35);z-index:55;display:none}
+.backdrop.on{display:block}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:28px}
+.modal.on{display:flex}
+.modal-box{background:#fff;border-radius:var(--radius);box-shadow:0 20px 60px rgba(16,24,40,.28);width:min(1100px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.modal-h h3{margin:0;font-size:14.5px}
+.modal-ctx{padding:9px 18px;background:var(--accent-soft);color:#20458f;font-size:12.5px;border-bottom:1px solid #dbe5fa;font-weight:600}
+.modal-b{overflow:auto}
+
+/* ---------- misc ---------- */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi .box{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 15px;background:var(--surface-2)}
+.kpi .box .lab{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);font-weight:700}
+.kpi .box .val{font-size:26px;font-weight:700;margin-top:3px;letter-spacing:-.5px}
+.callout{border:1px solid #ffd9b8;background:var(--warn-soft);color:#8a3a08;padding:11px 14px;border-radius:var(--radius-sm);font-size:12.5px;margin-bottom:14px}
+.callout b{color:#6d2c05}
+.file-drop{border:1.5px dashed var(--line-2);border-radius:var(--radius-sm);padding:18px;text-align:center;color:var(--text-3);font-size:12.5px;background:var(--surface-2)}
+.chk-list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 26px}
+.chk-list label{display:flex;align-items:center;gap:9px;font-size:13px;padding:5px 7px;border-radius:6px;cursor:pointer}
+.chk-list label:hover{background:var(--surface-2)}
+.chk-list .ser{font-family:var(--mono);font-size:11px;color:var(--text-3);width:16px}
+.rep-list{list-style:none;margin:0;padding:0}
+.rep-list li{border-bottom:1px solid var(--line)}
+.rep-list li:last-child{border-bottom:0}
+.rep-list button{width:100%;text-align:left;background:none;border:0;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;font-size:13.5px;color:var(--text)}
+.rep-list button:hover{background:var(--accent-soft);color:var(--accent)}
+.rep-list .no{font-family:var(--mono);font-size:11.5px;color:var(--text-3);width:22px}
+.rep-list .badge{margin-left:auto;font-size:11px;color:var(--text-3)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2233;color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;z-index:90;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--text-3);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+/* ---------- inline grid form (matches source layout) ---------- */
+.ig{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:#fff}
+.ig table.grid{border-collapse:collapse}
+tr.igform td{background:#f2f7fb;border-bottom:1px solid var(--line);padding:16px 18px}
+.ig-actions{display:flex;gap:16px;justify-content:flex-end;margin-top:14px;padding-top:11px;border-top:1px solid #dce7f0}
+.ig-actions .linkbtn{font-weight:600}
+
+/* ---------- wizard stepper ---------- */
+.stepper{display:flex;gap:6px;overflow-x:auto;padding:4px 0 16px}
+.step{display:flex;align-items:center;gap:9px;padding:9px 14px;border:1px solid var(--line);background:#fff;border-radius:var(--radius-sm);font-size:12.5px;color:var(--text-2);white-space:nowrap;cursor:pointer}
+.step:hover{border-color:var(--line-2)}
+.step .n{width:21px;height:21px;border-radius:50%;background:#eef1f6;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none}
+.step.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:650}
+.step.on .n{background:var(--accent);color:#fff}
+.step.done .n{background:var(--brand);color:#fff}
+.step.done{color:var(--brand);border-color:#bfe0d3}
+.wiz-nav{display:flex;gap:9px;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.wiz-nav .sp{margin-left:auto;color:var(--text-3);font-size:12.5px}
+
+/* ---------- proposed / unverified banner ---------- */
+.proposed{border:1px solid #d6c7f0;background:#f5efff;color:#4a2b7d;padding:11px 14px;border-radius:var(--radius-sm);font-size:12.5px;margin-bottom:16px}
+.proposed b{color:#38215f}
+.pill.prop{background:#f0e7ff;color:#5b3a94}
+
+/* ---------- lifecycle action bar ---------- */
+.lifebar{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px 16px;margin-bottom:16px}
+.steps{display:flex;align-items:center;gap:0;margin-bottom:14px;flex-wrap:wrap}
+.stp{display:flex;align-items:center;gap:8px;padding:6px 13px 6px 10px;border-radius:20px;font-size:12.5px;
+  font-weight:600;color:var(--text-3);background:#f1f4f9;border:1px solid var(--line)}
+.stp .n{width:19px;height:19px;border-radius:50%;background:#dfe4ed;color:#8a94a6;display:flex;
+  align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+.stp.done{background:var(--brand-soft);color:var(--brand);border-color:#bfe0d3}
+.stp.done .n{background:var(--brand);color:#fff}
+.stp.now{background:var(--accent-soft);color:var(--accent);border-color:#c5d6fa;box-shadow:0 0 0 3px #eaf0fd}
+.stp.now .n{background:var(--accent);color:#fff}
+.stp-arrow{color:var(--line-2);margin:0 5px;font-size:13px}
+.actbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:12px;border-top:1px solid var(--line)}
+.actbar .spacer{margin-left:auto;font-size:12px;color:var(--text-3)}
+.btn-lock{position:relative}
+.btn[disabled]{cursor:not-allowed}
+.mono-box{font-family:var(--mono);font-size:12px;background:#0f1520;color:#c8e6d8;padding:14px 16px;
+  border-radius:8px;overflow-x:auto;white-space:pre;line-height:1.65}
+
+/* ---------- chart ---------- */
+.chart{overflow-x:auto;padding:8px 0}
+.chart svg{display:block}
+.bar{fill:var(--accent)}
+.bar:hover{fill:#20458f}
+
+@media(max-width:1100px){.shell{grid-template-columns:1fr}.side{position:static}.grid-form,.crit-radios{grid-template-columns:repeat(2,1fr)}.emp-card{grid-template-columns:1fr}.chk-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">SEMS <small>School Enterprise Management System</small></div>
+    <nav class="topnav" id="topnav"></nav>
+    <div class="topbar-right">
+      <span class="clock" id="clock"></span>
+      <a href="#" onclick="return false">EduHub</a>
+      <a href="#" onclick="return false">Change Password</a>
+      <a href="#" onclick="return false">Logout</a>
+    </div>
+  </div>
+</div>
+<div class="announce"><span>كل عام وانتم بخير بمناسبه قرب انتهاء الشهر الكريم وكل عام وانتم بخير بمناسبه عيد الفطر المبارك وللمزيد أضغط هنا</span></div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="panel">
+      <div class="panel-h">Menu</div>
+      <div class="panel-b">
+        <button class="btn btn-sm" style="width:100%;justify-content:center;margin-bottom:11px">Top Management Reports</button>
+        <div class="wp-label">Work Place</div>
+        <select id="wpSel" style="width:100%;border:1px solid var(--line-2);border-radius:7px;padding:7px 9px;font-size:13px">
+          <option>Main Campus</option><option>Maadi Academy</option><option>HeadQuarter</option>
+        </select>
+        <div style="display:flex;gap:14px;margin-top:11px;font-size:12.5px">
+          <a href="#" onclick="return false">Search</a><a href="#" onclick="return false">Help</a>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Main Module</div>
+      <div id="sidenav"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Areas</div>
+      <div id="areanav"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Prototype</div>
+      <div class="panel-b" style="font-size:12px;color:var(--text-2)">
+        <button class="btn btn-sm" style="width:100%;justify-content:center" onclick="go('map')">All pages index</button>
+        <div class="legend" style="margin-top:11px">
+          <span><i class="sw" style="background:#c2410c"></i>TBD</span>
+          <span><i class="sw" style="background:#2f5fd0"></i>Assumption</span>
+          <span><i class="sw" style="background:#c0392b"></i>Conflict</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <main id="app"></main>
+</div>
+
+<div class="backdrop" id="backdrop" onclick="closeNotes()"></div>
+<aside class="notes" id="notes">
+  <div class="notes-h"><h4 id="notesTitle">Spec notes</h4><button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="closeNotes()">✕</button></div>
+  <div class="notes-b" id="notesBody"></div>
+</aside>
+
+<div class="modal" id="modal"><div class="modal-box">
+  <div class="modal-h"><h3 id="modalTitle"></h3><button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="closeModal()">✕</button></div>
+  <div id="modalCtx" class="modal-ctx"></div>
+  <div class="modal-b" id="modalBody"></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SEMS HR — interactive UI prototype
+   Built from the Business System Documentation (Increments 1-4).
+   Field labels, typos and lookup values are reproduced verbatim
+   from the source screenshots; only the visual design is new.
+   ============================================================ */
+
+/* ---------------- reference data (from screenshots only) ------------- */
+const EMPLOYEES=[
+ {ser:1,code:30912,id:'29001010100011',en:'Kareem Samir Hassan Ali',ar:'كريم سمير حسن على',dob:'11/9/1980',cell:'01000000011',wp:'Main Campus',st:'Active',pic:false},
+ {ser:2,code:19906,id:'29001010100022',en:'Tarek Nabil Fouad Saad',ar:'طارق نبيل فؤاد سعد',dob:'12/24/1993',cell:'01000000022',wp:'Main Campus',st:'Active',pic:false},
+ {ser:3,code:30358,id:'29001010100033',en:'Hala Wael Sabry Kamal',ar:'هالة وائل صبرى كمال',dob:'12/18/1997',cell:'01000000033',wp:'Main Campus',st:'Active',pic:false},
+ {ser:4,code:14538,id:'29001010100044',en:'Mervat Adel Zaki Omar',ar:'ميرفت عادل زكى عمر',dob:'9/1/1985',cell:'01000000044',wp:'Main Campus',st:'Active',pic:true},
+ {ser:5,code:25801,id:'29001010100055',en:'Rania Hosni Farid Nagi',ar:'رانيا حسنى فريد ناجى',dob:'9/11/1995',cell:'01000000055',wp:'Main Campus',st:'Active',pic:false}
+];
+const SCHOOLS=[
+ ['Main Campus',42,3],['FLS Legacy',470,8],['Maadi Academy',10,0],['FLS Mix',521,20],['FLS Mokatam',269,3],
+ ['[Unclear – Requires Confirmation]',459,11],['FLS Rehab',206,5],['FLS Rehab2',96,6],['Future Tech',265,6],
+ ['FLS Othman Ibn Affan',273,10],['Mavricks Katamia',134,3],['Mavricks October',78,5],['Le College Francais',56,2],
+ ['FLS Fustat',238,0],['FLS Shorouk Primary',157,9],['FLS Shorouk High',112,15],['Cosmic Village',69,4],
+ ['FLS Sohag',58,2],['LEcole De L Avenir National',11,1],['FLS Dahab',65,1],['FLS Gardenia City',87,5],
+ ['FLS Hurgada',262,5],['FLS Suez',263,13],['FLS Assiut',267,6],['Rising Stars',120,3],['FLS Qena',104,3],
+ ['FLS Menia',240,15],['Deutsche Schule',34,3],['IGCSE International',22,0],['LEcole de L Avenir',108,5],
+ ['Futures British School',230,6]
+];
+const DRILL=[
+ {ser:1,stage:'Upper Primary',id:'29001010100077',code:32475,name:'Youssef Hany Mostafa Lotfy',dep:'Disipline',job:'Disipline',hire:'22-Sep-2025',nat:'Egyptian'},
+ {ser:2,stage:'Lower Primary',id:'29001010100088',code:24420,name:'Nour Ashraf Gamal Selim',dep:'Bus Matron',job:'Bus Matron',hire:'09-Oct-2019',nat:'Egyptian'},
+ {ser:3,stage:'Lower Primary',id:'29001010100099',code:12817,name:'Salma Ayman Nabil Rashad',dep:'Bus Matron',job:'Bus Matron',hire:'03-Mar-2011',nat:'Egyptian'},
+ {ser:4,stage:'Upper Primary',id:'29001010100100',code:15933,name:'Dina Khaled Anwar Fahmy',dep:'Bus Matron',job:'Bus Matron',hire:'13-Feb-2013',nat:'Egyptian'}
+];
+const VAC_TYPES=[
+ ['Emergency Leave','أجازه عارضه'],['Summer Annual Leave','أجازه صيفيه اعتياديه'],['Unpaid Leave','أجازه بدون مرتب'],
+ ['Pilgrimage Leave','أجازة حج'],['Annual Leave','أجازه اعتياديه'],['Exceptional Leave','أجازه أستثنائيه'],['Omra Vaction','أجازه عمره']
+];
+const REPORTS=[
+ 'Active And In-Active Employees','Employee Documents','Employee Evaluation','Employee Evaluation By Employee New',
+ 'Employee Evaluation New','Employee Personal Details','Employee Returned Documents','Employee Training',
+ 'Employees By Gender','Human Resources Statistic','Man Power Control','Number of Employees in All Schools (Chart Report)','Students Discounts'
+];
+const SEARCH_BY=['Code','By Stage/Department/Status/Category','ID','Work Place','Job Title','Mobile','Name','Hire Type'];
+const TBDSEL='<option>TBD / Requires Confirmation</option>';
+
+/* ---------------- app state ---------------- */
+const S={
+  area:'profile', page:'emp-list', tab:'personal', step:1, sub:'list',
+  emp:EMPLOYEES[0], searchBy:'Code', q:'',
+  wizard:{nat:'Egyptian',civil:''},
+  edu:[],lang:[],exam:[],cert:[],exp:[],intv:[],docs:[],children:[],
+  showEdu:false,showLang:false,showExam:false,showCert:false,showExp:false,showIntv:false,showDoc:false,
+  docSearchBy:'By Stage/Department/Status/Category', docLoaded:false, docLoading:false,
+  aprPath:'code',
+  rptShown:false, rptCriteria:{},
+  rptFields:{1:true,2:true,3:true,4:true,5:true,6:false,7:false,8:false,9:false,10:false,11:false},
+  lc:{}, prShown:false,
+  vac:[], showVac:false, vacYear:'2025-2026',
+  vacForm:{type:'',from:'',to:''}
+};
+
+/* ---------------- navigation model ---------------- */
+const AREAS={
+  profile:{label:'Staff → Profile',items:[
+    ['emp-list','Employee Personal Details NEW'],['doc-list','Employee Documents'],
+    ['approve','Approve Employee Status'],['reports','Reports']]},
+  vacation:{label:'Employee Vacation',items:[['vac-list','Employee Vacation']]}
+};
+const PAGE_AREA={'emp-list':'profile','emp-new':'profile','emp-profile':'profile',
+ 'doc-list':'profile','approve':'profile','reports':'profile',
+ 'vac-list':'vacation','vac-record':'vacation','map':'profile'};
+for(let i=1;i<=13;i++)PAGE_AREA['rpt-'+String(i).padStart(2,'0')]='profile';
+const PAGE_CODE={'map':'INDEX','emp-list':'PG-EMP-01','emp-new':'PG-EMP-02','emp-profile':'PG-EMP-04',
+ 'doc-list':'PG-DOC-01','approve':'PG-APR-01','reports':'PG-RPT-00','rpt-01':'PG-RPT-01','rpt-02':'PG-RPT-02',
+ 'vac-list':'PG-VAC-01','vac-record':'PG-VAC-02'};
+for(let i=3;i<=13;i++){const k='rpt-'+String(i).padStart(2,'0');PAGE_CODE[k]='PG-RPT-'+String(i).padStart(2,'0');}
+const TAB_CODE={personal:'PG-EMP-05',education:'PG-EMP-06',experience:'PG-EMP-07',interviews:'PG-EMP-08',
+ hire:'PG-EMP-09',document:'PG-EMP-10',status:'PG-EMP-11',history:'PG-EMP-12'};
+
+/* ---------------- spec notes per page ---------------- */
+const NOTES={
+'PG-EMP-01':[['tbd','OQ-03','Only the <b>Code</b> criterion input was captured. The other seven criteria render unknown inputs.'],
+ ['tbd','OQ-02','No role names are exposed anywhere; who may click <b>Add New Employee</b> is unconfirmed.'],
+ ['asm','BR-EMP-009','No delete control exists at list level — employees are never deleted, only status-managed.'],
+ ['tbd','OQ-61','Employee 14538 has a 10-digit mobile where all others have 11 — no length validation confirmed.']],
+'PG-EMP-02':[['asm','VR-EMP-001','BirthDate is derived from Civil ID (29001010100066 → 26/07/1995). Algorithm inferred, not confirmed.'],
+ ['tbd','VR-EMP-003','Civil ID uniqueness is presumed but the duplicate-key behaviour was never observed.'],
+ ['tbd','OQ-18','No Cancel/Back control exists. What happens to an abandoned record after this step is unknown.']],
+'PG-EMP-03':[['tbd','OQ-01','<b>No asterisks appear anywhere on this form</b> — mandatory fields cannot be determined.'],
+ ['asm','—','Spouse Name and the Military Status block are conditional in business terms only; the UI never disables them.'],
+ ['tbd','OQ-16','Picture upload: allowed extensions and max size unknown.']],
+'PG-EMP-04':[['conf','CONFLICT-01','Card shows Work Place = <b>Main Campus</b>; the Hire Details tab shows <b>HeadQuarter</b> for the same employee.'],
+ ['asm','BR-DOC-005','<b>Last Status</b> appears to be written by the Employee Documents batch job, not by record edits.'],
+ ['tbd','OQ-17','Whether ‹‹ Previous / Next ›› traverse the filtered result set or the full list is unconfirmed.']],
+'PG-EMP-05':[['conf','CONFLICT-02','Nationality and Civil ID are disabled during creation but appear editable here.'],
+ ['conf','CONFLICT-03','Marital Status and Military Status render as <b>0</b> — possibly an unmapped lookup ID leaking to the UI.'],
+ ['tbd','OQ-08','No row Edit/Delete controls were observable — every grid was empty.']],
+'PG-EMP-06':[['asm','INC-01','This tab uses Save/Cancel on inline forms; Experience and Interviews use Update/Cancel for the same operation.'],
+ ['tbd','OQ-05','Full value lists for Edu Level, University, Faculty, Grade and Language Level are unknown.']],
+'PG-EMP-07':[['asm','INC-05','Work Place and Job Title are free text here but lookups on Hire Details — presumed deliberate (external employers).'],
+ ['tbd','VR-EMP-016','Date To ≥ Date From is assumed, not observed.']],
+'PG-EMP-08':[['asm','—','Interviewer is free text and is not linked to a system user list.'],
+ ['tbd','OQ-05','Interview Result lookup values are unknown.']],
+'PG-EMP-09':[['asm','BR-EMP-015','Branch (2008000) is disabled — presumed derived from Work Place.'],
+ ['asm','BR-EMP-017','<b>Insurred?</b> is disabled — presumed derived from Hire Type or owned by the Insurance module.'],
+ ['tbd','OQ-01','No asterisks on this tab; mandatory fields unknown.']],
+'PG-EMP-10':[['asm','BR-EMP-011','Uploaded Docs reads <b>0 of 9</b> — nine documents are required, but the nine types are unknown (OQ-04).'],
+ ['tbd','OQ-12','Return Date, Creation Date, Processed by and Due Date appear only in the grid, with no matching input.'],
+ ['tbd','OQ-15','Output format of “Download …’s Docs” (ZIP / merged PDF) is unknown.']],
+'PG-EMP-11':[['asm','BR-EMP-023','Terminate/Reactivate render disabled — the operation is presumed privilege-restricted.'],
+ ['tbd','OQ-07','The Reactivate form was never captured.'],
+ ['tbd','OQ-10','No confirmation prompt was observed before an irreversible Terminate.']],
+'PG-EMP-12':[['tbd','OQ-06','The History tab exists in the tab strip but its contents were never supplied.']],
+'PG-DOC-01':[['tbd','OQ-20','<b>Highest priority.</b> Does “Update Documents Status” act on the displayed population or on all employees?'],
+ ['tbd','OQ-21','Whether the EN/AR toggle controls the grid, an export, or both is unknown.'],
+ ['tbd','OQ-23','Drilling into a profile from here may return the user to PG-EMP-01, losing search context.']],
+'PG-APR-01':[['tbd','OQ-25','<b>How rows are selected for approval is unknown</b> — no checkbox column was visible. Shown here as an assumption.'],
+ ['tbd','OQ-24','“* Department” carries a required marker yet defaults to All.'],
+ ['tbd','OQ-27','There is no Reject action — how a change is declined is unknown.']],
+'PG-RPT-00':[['tbd','OQ-54','Whether the 13 reports are privilege-filtered per role is unknown.'],
+ ['asm','§A.5','Evaluation, Training, Returned Documents and Students Discounts imply modules not yet supplied.']],
+'PG-RPT-01':[['conf','CONFLICT-04','The index calls this “Active And In-Active Employees”; the page banner says “Employee Statistacal Report”.'],
+ ['conf','CONFLICT-05','Clicking New Hired Emp. opened a list captioned “Active Employees” containing 2011 hires.'],
+ ['tbd','OQ-45','The two percentage formulas are <b>not documented and not invented here</b>.'],
+ ['asm','OQ-56','Row 7 (FLS Rehab) figures 206 / 5 / +201 are derived by reconciliation with the Total row.']],
+'PG-RPT-02':[['tbd','OQ-50','The execute/export control was outside the captured area.'],
+ ['tbd','OQ-52','Further field groups may exist below “Employee General Info”.'],
+ ['asm','BR-RPT-018','Status defaults to Active — the only non-“all” default anywhere in the system.']],
+'PG-VAC-01':[['asm','BR-STF-008','The employee list is reused here without the Add New Employee action.']],
+'PG-RPT-03':[['asm','PROPOSED','No screenshot exists. Employee, Department and Job Title are confirmed fields; the evaluation columns are a proposal.'],['tbd','OQ-37','The Evaluation module has never been supplied — three of the 13 reports depend on it.']],
+'PG-RPT-04':[['asm','PROPOSED','A single-employee breakdown, inferred from the report name “By Employee”.'],['tbd','OQ-37','Evaluation criteria, weighting and scoring model are unknown.']],
+'PG-RPT-05':[['asm','PROPOSED','Second-generation variant of PG-RPT-03 (BR-RPT-003).'],['tbd','—','The functional difference between the original and “New” generations is unknown.']],
+'PG-RPT-06':[['asm','PROPOSED','Layout is proposed, but <b>every column is a confirmed field</b> of the documented Employee entity (PG-EMP-05 / PG-EMP-09).'],['tbd','OQ-01','Which fields are mandatory is still unknown, so nothing is marked required here.']],
+'PG-RPT-07':[['asm','PROPOSED','All columns are confirmed grid columns of PG-EMP-10.'],['tbd','OQ-39','This report explains the otherwise unexplained Return Date column, but the return workflow itself was never supplied (OQ-12).']],
+'PG-RPT-08':[['asm','PROPOSED','Employee columns are confirmed; training columns are a proposal.'],['tbd','OQ-38','The Training module has never been supplied.']],
+'PG-RPT-09':[['asm','PROPOSED','Gender and Work Place are confirmed Employee fields.'],['tbd','OQ-45','Percentage columns follow the PG-RPT-01 pattern — no formula is asserted.']],
+'PG-RPT-10':[['asm','PROPOSED','Built only from confirmed dimensions: Department, Emp Category, Status.'],['conf','CONFLICT-04','The PG-RPT-01 page banner reads “Employee Statistacal Report” — that banner may in fact belong to this report.']],
+'PG-RPT-11':[['asm','PROPOSED','Work Place, Department and Job Title are confirmed.'],['tbd','OQ-41','Approved Positions / Filled / Vacant need an establishment entity that has never appeared in any screen.']],
+'PG-RPT-12':[['asm','PROPOSED','The 31 school names are confirmed; the plotted magnitudes are placeholders.'],['tbd','—','A per-school headcount figure was never supplied, so the chart reuses the New Hired Emp. counts from PG-RPT-01.']],
+'PG-RPT-13':[['asm','PROPOSED','Child Name, National ID, in Our Schools, School and Student ID are confirmed columns of the Children grid (PG-EMP-05).'],['tbd','OQ-40','The discount value itself requires the Students module, which has not been supplied.']],
+'PG-VAC-02':[['conf','CONFLICT-06','<b>A 17-day Unpaid Leave was saved against a 14-day balance and the balance did not move.</b> By design, stale display, or defect — unresolved.'],
+ ['tbd','OQ-68','Which of the 7 vacation types deduct from the balance is unknown.'],
+ ['tbd','OQ-66','No edit or delete control exists for a saved vacation record.'],
+ ['tbd','OQ-64','Whether Academic Year scopes the balance figures as well as the grid is unknown.'],
+ ['tbd','OQ-57','The parent top-navigation item for this area could not be determined.']]
+};
+
+/* ---------------- helpers ---------------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('on'),2200);}
+function sel(label,opts,attrs=''){return `<div class="f"><label>${label}</label><select ${attrs}>${opts.map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>`;}
+function txt(label,attrs='',hint=''){return `<div class="f"><label>${label}</label><input type="text" ${attrs}>${hint?`<span class="hint">${hint}</span>`:''}</div>`;}
+function dt(label,attrs=''){return `<div class="f"><label>${label}</label><input type="date" ${attrs}></div>`;}
+function req(){return '<span class="req" title="Required — marked with * in the source UI">*</span>';}
+function pageHead(title,sub,code,actions=''){
+  return `<div class="page-head">
+    <div><h1 class="page-title">${title}</h1><p class="page-sub">${sub}</p></div>
+    <div class="page-head-actions">${actions}
+      <span class="code-badge">${code}</span>
+      <button class="btn btn-sm btn-ghost" onclick="openNotes('${code}')">Spec notes</button>
+    </div></div>`;
+}
+function pager(txtLeft,pages,size){
+  return `<div class="pager"><span>${txtLeft}</span>
+    ${pages?`<button class="pg on">1</button><button class="pg">2</button><button class="pg">›</button><button class="pg">All</button>`:''}
+    <span class="right">Page size <select style="border:1px solid var(--line-2);border-radius:6px;padding:4px 7px"><option>${size}</option></select></span></div>`;
+}
+function critRadios(list,current,handler){
+  return `<div class="crit-radios">${list.map(c=>`<label><input type="radio" name="crit" ${c===current?'checked':''} onchange="${handler}('${c.replace(/'/g,"\\'")}')"> ${esc(c)}</label>`).join('')}</div>`;
+}
+function openNotes(code){
+  const n=NOTES[code]||[['tbd','—','No open questions recorded for this page.']];
+  $('notesTitle').textContent='Spec notes — '+code;
+  $('notesBody').innerHTML=n.map(([k,tag,body])=>`<div class="note ${k}"><span class="tag ${k}">${tag}</span>${body}</div>`).join('')
+    +`<div style="margin-top:18px;font-size:12px;color:var(--text-3);border-top:1px solid var(--line);padding-top:12px">
+      Notes are traceability links back to the Business System Documentation. Nothing on this screen invents behaviour that was not visible in the source system.</div>`;
+  $('notes').classList.add('open');$('backdrop').classList.add('on');
+}
+function closeNotes(){$('notes').classList.remove('open');$('backdrop').classList.remove('on');}
+function showModal(title,ctx,body){$('modalTitle').textContent=title;
+  $('modalCtx').innerHTML=ctx||'';$('modalCtx').style.display=ctx?'':'none';
+  $('modalBody').innerHTML=body;$('modal').classList.add('on');}
+function closeModal(){$('modal').classList.remove('on');}
+function go(page,tab){
+  if(page!==S.page&&/^rpt-/.test(page))S.rptShown=false;
+  S.page=page;if(tab)S.tab=tab;S.area=PAGE_AREA[page]||S.area;window.scrollTo(0,0);render();}
+function goArea(page){S.sub='list';go(page);}
+function openPR(k){S.prShown=false;go(k);}
+function startWizard(){
+  S.step=1;S.wizard={nat:'Egyptian',civil:''};
+  S.edu=[];S.lang=[];S.exam=[];S.cert=[];S.exp=[];S.intv=[];S.docs=[];
+  S.showEdu=S.showLang=S.showExam=S.showCert=S.showExp=S.showIntv=S.showDoc=false;
+  go('emp-new');}
+
+/* ---------------- chrome ---------------- */
+function renderChrome(){
+  $('topnav').innerHTML=['Setup','Students','Staff','Services','Themes']
+    .map(x=>`<button class="${x==='Staff'?'on':''}" onclick="toast('${x} module not in documented scope')">${x}</button>`).join('');
+  const a=AREAS[S.area];
+  $('sidenav').innerHTML=
+    `<div style="padding:8px 14px 6px;font-size:11px;color:var(--text-3);border-bottom:1px solid var(--line)">${esc(a.label)}${a.proposed?' <span class="pill prop" style="font-size:9.5px">proposed</span>':''}</div>`
+   +a.items.map(([p,l])=>
+    `<button class="side-link ${S.page===p||(p==='emp-list'&&['emp-new','emp-profile'].includes(S.page))||(p==='reports'&&/^rpt-/.test(S.page))||(p==='vac-list'&&S.page==='vac-record')?'on':''}" onclick="goArea('${p}')"><i class="dot"></i>${l}</button>`).join('');
+  $('areanav').innerHTML=Object.entries(AREAS).map(([k,v])=>
+    `<button class="side-link ${S.area===k?'on':''}" onclick="goArea('${v.items[0][0]}')" title="${esc(v.label)}">
+      <i class="dot"></i>${esc(v.label.replace('Recruitment · Performance · Training · Insurance','Talent & Insurance'))}
+      ${v.proposed?'<span class="pill prop" style="margin-left:auto;font-size:9.5px">new</span>':''}</button>`).join('');
+  const now=new Date();
+  $('clock').textContent=now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'  '+now.toLocaleTimeString();
+}
+setInterval(()=>{const n=new Date();const c=$('clock');if(c)c.textContent=n.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'  '+n.toLocaleTimeString();},1000);
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+
+/* ---- index / map ---- */
+function pgMap(){
+  const rows=[
+   ['STF-EMP-01','PG-EMP-01','Employees List','List','emp-list'],
+   ['STF-EMP-01','PG-EMP-02','Add New Employee — 7-step wizard','Wizard','emp-new'],
+   ['STF-EMP-01','PG-EMP-04','Employee Profile (shell)','Profile','emp-profile'],
+   ['STF-EMP-01','PG-EMP-05','Tab — Personal info','Edit form','emp-profile|personal'],
+   ['STF-EMP-01','PG-EMP-06','Tab — Education','Edit form','emp-profile|education'],
+   ['STF-EMP-01','PG-EMP-07','Tab — Experience','Edit form','emp-profile|experience'],
+   ['STF-EMP-01','PG-EMP-08','Tab — Interviews','Edit form','emp-profile|interviews'],
+   ['STF-EMP-01','PG-EMP-09','Tab — Hire Details','Edit form','emp-profile|hire'],
+   ['STF-EMP-01','PG-EMP-10','Tab — Document','List + upload','emp-profile|document'],
+   ['STF-EMP-01','PG-EMP-11','Tab — Status','Approval','emp-profile|status'],
+   ['STF-EMP-01','PG-EMP-12','Tab — History','History','emp-profile|history'],
+   ['STF-EMP-02','PG-DOC-01','Employees Documents','List / report','doc-list'],
+   ['STF-EMP-03','PG-APR-01','Approve Employee Status','Approval','approve'],
+   ['STF-RPT','PG-RPT-00','Reports (index)','Index','reports'],
+   ['STF-RPT','PG-RPT-01','Employee Statistacal Report','Report','rpt-01'],
+   ['STF-RPT','PG-RPT-02','Employee Documents (Report)','Report','rpt-02'],
+   ['STF-RPT','PG-RPT-03','Employee Evaluation','Report · proposed','rpt-03'],
+   ['STF-RPT','PG-RPT-04','Employee Evaluation By Employee New','Report · proposed','rpt-04'],
+   ['STF-RPT','PG-RPT-05','Employee Evaluation New','Report · proposed','rpt-05'],
+   ['STF-RPT','PG-RPT-06','Employee Personal Details','Report · proposed','rpt-06'],
+   ['STF-RPT','PG-RPT-07','Employee Returned Documents','Report · proposed','rpt-07'],
+   ['STF-RPT','PG-RPT-08','Employee Training','Report · proposed','rpt-08'],
+   ['STF-RPT','PG-RPT-09','Employees By Gender','Report · proposed','rpt-09'],
+   ['STF-RPT','PG-RPT-10','Human Resources Statistic','Report · proposed','rpt-10'],
+   ['STF-RPT','PG-RPT-11','Man Power Control','Report · proposed','rpt-11'],
+   ['STF-RPT','PG-RPT-12','Number of Employees in All Schools (Chart Report)','Chart · proposed','rpt-12'],
+   ['STF-RPT','PG-RPT-13','Students Discounts','Report · proposed','rpt-13'],
+   ['STF-VAC-01','PG-VAC-01','Employee Vacation — Employees List','List','vac-list'],
+   ['STF-VAC-01','PG-VAC-02','Employee Vacation','Details','vac-record'],
+   ['STF-VAC-01','PG-VAC-03','Add New Vacation','Inline form','vac-record']
+  ];
+  return pageHead('All pages','Every page documented in Increments 1–4, rendered as a working web UI.','INDEX')
+   +`<div class="callout"><b>Design note.</b> This is a modern redesign of the presentation layer only. Every field label, lookup value, tab, column, button and typo (<i>Governerate</i>, <i>Administartion</i>, <i>Insurred?</i>, <i>Omra Vaction</i>, <i>Statistacal</i>) is reproduced verbatim from the source system so the prototype stays traceable to the specification. Nothing that was marked <b>TBD</b> has been invented — those points appear in the <b>Spec notes</b> drawer on each page.</div>
+   <div class="card"><div class="card-h"><h3>Documented from the existing system</h3>
+     <div class="right"><span class="pill ok">as-is</span></div></div><div class="card-b tight"><div class="tablewrap"><table class="grid">
+   <thead><tr><th>Scenario</th><th>Page code</th><th>Page name</th><th>Type</th><th></th></tr></thead><tbody>
+   ${rows.map(r=>`<tr><td style="font-family:var(--mono);font-size:11.5px;color:var(--text-3)">${r[0]}</td>
+     <td><span class="code-badge">${r[1]}</span></td><td>${esc(r[2])}</td><td style="color:var(--text-2)">${r[3]}</td>
+     <td style="text-align:right"><button class="btn btn-sm" onclick="${r[4].includes('|')?`go('${r[4].split('|')[0]}','${r[4].split('|')[1]}')`:`go('${r[4]}')`}">Open →</button></td></tr>`).join('')}
+   </tbody></table></div></div></div>
+   <div class="card"><div class="card-h"><h3>New HR scenarios — proposed design</h3>
+     <div class="right"><span class="pill prop">proposed</span></div></div><div class="card-b tight"><div class="tablewrap"><table class="grid">
+   <thead><tr><th>Scenario</th><th>Page code</th><th>Page name</th><th>Area</th><th>Screens</th><th></th></tr></thead><tbody>
+   ${Object.values(MOD).map(m=>`<tr><td style="font-family:var(--mono);font-size:11.5px;color:var(--text-3)">${m.scen}</td>
+     <td><span class="code-badge">${m.code}</span></td><td>${esc(m.name)}</td>
+     <td style="color:var(--text-2)">${esc(AREAS[m.area].label)}</td>
+     <td style="color:var(--text-2)">${m.reportList?'Report index':['List',m.detail?'Detail':null,m.form?'Form':null].filter(Boolean).join(' · ')}</td>
+     <td style="text-align:right"><button class="btn btn-sm" onclick="goM('${m.key}','list')">Open →</button></td></tr>`).join('')}
+   </tbody></table></div></div></div>`;
+}
+
+/* ---- PG-EMP-01 / PG-VAC-01 shared employee list ---- */
+function employeeList(mode){
+  const isVac=mode==='vac';
+  const code=isVac?'PG-VAC-01':'PG-EMP-01';
+  const q=S.q.toLowerCase();
+  const rows=EMPLOYEES.filter(e=>!q||[e.code,e.id,e.en,e.ar,e.cell,e.wp,e.st].join(' ').toLowerCase().includes(q));
+  const critInput=S.searchBy==='By Stage/Department/Status/Category'
+    ? `<div class="grid-form">${sel('Stage',['--ALL--','KG Stage','Lower Primary','Upper Primary'])}${sel('Department',['--ALL--','Administartion','Disipline','Bus Matron'])}${sel('Status',['--ALL--','Active','Incomplete Data'])}${sel('Category',['--ALL--','Non Teaching'])}</div>`
+    : `<div class="grid-form"><div class="f"><label>${esc(S.searchBy)}</label><input type="text" placeholder="${S.searchBy==='Code'?'e.g. 30912':'TBD — input not captured in source'}"></div></div>`;
+  return pageHead(isVac?'Employee Vacation':'Employee Personal Details NEW',
+    isVac?'Select an employee to manage their vacation ledger.':'Search, browse and create employee master records.',code,
+    isVac?'':`<button class="btn btn-primary" onclick="startWizard()">+ Add New Employee</button>`)
+  +`<div class="card"><div class="card-h"><h3>Search By</h3>
+      <div class="right"><span class="pill mute">${SEARCH_BY.length} criteria</span></div></div>
+    <div class="card-b">${critRadios(SEARCH_BY,S.searchBy,'setSearchBy')}${critInput}
+      <div style="margin-top:14px"><button class="btn btn-accent" onclick="toast('Search executed — result set unchanged in prototype')">Search</button></div>
+    </div></div>
+   <div class="card"><div class="card-b tight">
+     <div class="searchbar"><input placeholder="Enter text to search..." value="${esc(S.q)}" oninput="S.q=this.value;render()"></div>
+     <div class="groupbar">Drag a column header here to group by that column</div>
+     <div class="tablewrap"><table class="grid">
+       <thead><tr><th>Ser</th><th>Details</th><th>Pic</th><th>Emp Code</th><th>Emp Id</th><th class="sorted">English Full Name</th><th>Arabic Full Name</th><th>Birth Date</th><th>Cell Phone</th><th>WorkPlace</th><th>Status</th></tr>
+       <tr class="filters"><td></td><td><input></td><td></td><td><input></td><td><input></td><td><input></td><td><input></td><td><select><option></option></select></td><td><input></td><td><select><option></option><option>Main Campus</option></select></td><td><select><option></option><option>Active</option></select></td></tr></thead>
+       <tbody>${rows.map(e=>`<tr>
+         <td>${e.ser}</td>
+         <td><button class="icon-btn" title="Open details" onclick="openEmp(${e.code},'${isVac?'vac-record':'emp-profile'}')">▤</button></td>
+         <td><div class="avatar ${e.pic?'has':''}">${e.pic?'👤':'NO<br>PHOTO'}</div></td>
+         <td>${e.code}</td><td style="font-family:var(--mono);font-size:12px">${e.id}</td>
+         <td>${esc(e.en)}</td><td dir="rtl">${esc(e.ar)}</td><td>${e.dob}</td><td>${e.cell}</td><td>${e.wp}</td>
+         <td><span class="pill ok">${e.st}</span></td></tr>`).join('')
+         ||'<tr><td colspan="11" class="empty">No data to display</td></tr>'}
+         <tr><td colspan="11" style="background:#fffaf3;color:#8a3a08;font-size:12.5px;padding:10px 12px">
+           27 further records exist (32 items total) but were not captured in the source screenshots — deliberately not invented.</td></tr>
+       </tbody></table></div>
+     ${pager('Page 1 of 2 (32 items)',true,30)}
+   </div></div>`;
+}
+function setSearchBy(c){S.searchBy=c;render();}
+function openEmp(code,page){S.emp=EMPLOYEES.find(e=>e.code===code)||EMPLOYEES[0];go(page);}
+
+/* ============================================================
+   ADD NEW EMPLOYEE — full 7-step wizard
+   Steps 1-2 are the source system's own wizard (PG-EMP-02 / PG-EMP-03).
+   Steps 3-7 reuse the profile tabs (PG-EMP-06 … PG-EMP-10), which in the
+   AS-IS system are only reachable AFTER the record is created.
+   Surfacing them inside the create flow is a deliberate deviation,
+   requested by the business — flagged on screen and in the spec notes.
+   ============================================================ */
+const WIZ=[
+  {n:1,label:'Identity',code:'PG-EMP-02',src:true},
+  {n:2,label:'Personal info',code:'PG-EMP-03',src:true},
+  {n:3,label:'Education Information',code:'PG-EMP-06',src:false},
+  {n:4,label:'Experience',code:'PG-EMP-07',src:false},
+  {n:5,label:'Interviews',code:'PG-EMP-08',src:false},
+  {n:6,label:'Hire Details',code:'PG-EMP-09',src:false},
+  {n:7,label:'Documents',code:'PG-EMP-10',src:false}
+];
+function pgWizard(){
+  const st=WIZ.find(w=>w.n===S.step)||WIZ[0];
+  const body={1:wizStep1,2:wizStep2,3:tabEducation,4:tabExperience,5:tabInterviews,6:tabHire,7:tabDocument}[st.n]();
+  return pageHead('Add New Employee','Step '+st.n+' of 7 — '+st.label,st.code,
+      `<button class="btn btn-sm btn-ghost" onclick="go('emp-list')">Cancel</button>`)
+   +`<div class="stepper">${WIZ.map(w=>`<button class="step ${w.n===S.step?'on':''} ${w.n<S.step?'done':''}" onclick="S.step=${w.n};render()">
+        <span class="n">${w.n<S.step?'✓':w.n}</span>${w.label}<span class="code-badge" style="font-size:10px;padding:1px 5px">${w.code}</span></button>`).join('')}</div>
+    ${st.src?'':`<div class="proposed"><b>Deviation from the as-is system.</b> In SEMS this step lives on the Employee Profile tabs (<b>${st.code}</b>) and is only reachable after the record has been created. It is included in the create flow here because you asked for it — the underlying fields, lookups and required markers are unchanged.</div>`}
+    <div class="card"><div class="card-b">${body}
+      <div class="wiz-nav">
+        ${S.step>1?`<button class="btn" onclick="S.step--;render()">← Back</button>`:''}
+        ${S.step<7?`<button class="btn btn-primary" onclick="wizNext()">Continue →</button>`
+                  :`<button class="btn btn-primary" onclick="wizFinish()">Finish &amp; open profile →</button>`}
+        <span class="sp">${st.src?'Source-system step':'Reused from profile tab '+st.code}</span>
+      </div></div></div>`;
+}
+function wizNext(){ if(S.step===1){captureIdentity();} S.step++; window.scrollTo(0,0); render(); }
+function wizFinish(){ S.emp=EMPLOYEES[0]; toast('Employee created — status starts as Incomplete Data (BR-EMP-010)'); go('emp-profile','personal'); }
+
+/* ---- PG-EMP-02 (wizard step 1) ---- */
+function wizStep1(){
+  return `<div class="card" style="max-width:640px;box-shadow:none;margin:0"><div class="card-h"><h3>New Employee</h3><div class="right"><span class="pill mute">Identity key</span></div></div>
+    <div class="card-b">
+      <div class="grid-form c2">
+        ${sel('Nationality',['Egyptian'],'id="wNat"')}
+        ${txt('Civil ID','id="wCivil" placeholder="29001010100066" maxlength="14"','14 digits — BirthDate is derived from this value')}
+      </div>
+      <div class="callout" style="margin:18px 0 0"><b>Behaviour reproduced:</b> Continue derives BirthDate from the Civil ID and locks Nationality, Civil ID and ID Type on the next step. There is no Cancel or Back control in the source system (OQ-18).</div>
+    </div></div>`;
+}
+function captureIdentity(){
+  const c=($('wCivil')||{}).value?$('wCivil').value.trim():'';
+  S.wizard={nat:($('wNat')||{}).value||'Egyptian',civil:c,dob:civilToDob(c)};
+}
+function civilToDob(c){
+  if(!/^\d{14}$/.test(c))return '';
+  const cen=c[0]==='2'?'19':c[0]==='3'?'20':'19';
+  return `${c.slice(5,7)}/${c.slice(3,5)}/${cen}${c.slice(1,3)}`;
+}
+
+/* ---- PG-EMP-03 (wizard step 2) ---- */
+function wizStep2(){
+  const w=S.wizard;
+  return `<div class="card" style="box-shadow:none;margin:0"><div class="card-h"><h3>Personal information</h3><div class="right"><span class="pill mute">Personal · Military · Contact · Emergency</span></div></div>
+   <div class="card-b">
+    <div class="section-label">Full name</div>
+    <div class="grid-form">${txt('First Name')}${txt('Middle Name')}${txt('Last Name')}${txt('Family Name')}</div>
+    <div class="section-label">الاسم بالعربية</div>
+    <div class="grid-form">
+      <div class="f rtl"><label>الاسم الاول</label><input type="text"></div>
+      <div class="f rtl"><label>الاب</label><input type="text"></div>
+      <div class="f rtl"><label>الجد</label><input type="text"></div>
+      <div class="f rtl"><label>العائله</label><input type="text"></div>
+    </div>
+    <div class="section-label">Demographics</div>
+    <div class="grid-form">
+      <div class="f"><label>Gender</label><div class="radio-row"><label><input type="radio" name="g" checked> Male</label><label><input type="radio" name="g"> Female</label></div></div>
+      ${sel('Religion',['Muslim','TBD / Requires Confirmation'])}
+      <div class="f"><label>BirthDate <span class="derived">derived from Civil ID</span></label><input type="text" value="${esc(w.dob||'')}" disabled></div>
+      <div class="f"><label>Nationality <span class="ro-tag">locked</span></label><input type="text" value="${esc(w.nat||'Egyptian')}" disabled></div>
+      <div class="f"><label>ID Type <span class="ro-tag">derived</span></label><input type="text" value="Civil" disabled></div>
+      <div class="f"><label>Civil ID <span class="ro-tag">locked</span></label><input type="text" value="${esc(w.civil||'')}" disabled></div>
+      ${txt('Birth place')}${sel('Marital Status',['','TBD / Requires Confirmation'])}
+      ${txt('Mother Name')}${txt('Spouse Name')}
+      <div class="f"><label>Medical Insurance</label><div class="radio-row"><label><input type="radio" name="mi" checked> No</label><label><input type="radio" name="mi"> Yes</label></div></div>
+      <div class="f" style="grid-column:span 2"><label>Picture</label><div class="file-drop">Drop file(s) here &nbsp;·&nbsp; <button class="btn btn-sm">Browse…</button><div style="margin-top:6px">No Photo — allowed types &amp; max size: TBD (OQ-16)</div></div></div>
+    </div>
+    <div class="section-label">Military Status</div>
+    <div class="grid-form c3">${sel('Military Status',['','TBD / Requires Confirmation'])}${txt('Military Number')}${dt('Date')}</div>
+    <div class="section-label">Contact Information</div>
+    <div class="grid-form">
+      ${sel('Governerate',['','Cairo','TBD / Requires Confirmation'])}${txt('District')}${txt('Street name')}
+      <div class="f" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="f"><label>Floor</label><input type="text"></div><div class="f"><label>Apt</label><input type="text"></div></div>
+      ${txt('Home Phone1')}${txt('Home Phone2')}${txt('Cell Phone1')}${txt('Cell Phone2')}
+      ${txt('Personal Email')}${txt('School Email')}
+    </div>
+    <div class="section-label">Emergency Contact</div>
+    <div class="grid-form">${txt('Name')}${txt('Home Phone')}${txt('Relationship','','Free text — not a lookup')}${txt('Mobile Phone')}</div>
+   </div></div>`;
+}
+
+/* ---- PG-EMP-04 shell + tabs ---- */
+function empCard(vacation){
+  const e=S.emp;
+  const rows = vacation
+   ? [['Employee Name :',e.en],['Status','<span class="pill ok">Active</span>'],
+      ['Employee ID :',e.id],['Employee Code',e.code],['Last Processed By:','<span style="color:var(--text-3)">— (blank on this page — INC-28)</span>'],['',''],
+      ['Category:','Non Teaching'],['Work Place:',e.wp],['Job Title:','Administrative'],['',''],
+      ['Department:','Administartion'],['Supervisor Name:',''],['Hire Date:','01 September 2025'],['',''],
+      ['Vacation Balance (Rule):','<b>14</b>'],['Emp. Vacation :','<b>'+vacUsed()+'</b>'],['Balance Remaining:','<b>'+(14-vacUsed())+'</b>'],['','']]
+   : [['Employee Name :',e.en],['Status','<span class="pill ok">Active</span>'],
+      ['Employee ID :',e.id],['Employee Code',e.code],['Last Processed By:','hr.officer'],['',''],
+      ['Category:','Non Teaching'],['Work Place:',e.wp],['Job Title:','Administrative'],['',''],
+      ['Department:','Administartion'],['Supervisor Name:','-----'],['Hire Date:','01 September 2025'],['',''],
+      ['Uploaded Docs:',S.docs.length+' of 9'],['Document Status:',S.docs.length>=9?'<span class="pill ok">Complete</span>':'<span class="pill bad">Incomplete</span>'],
+      ['Last Status:','Thursday,30 October 2025'],['','']];
+  let cells='';
+  for(let i=0;i<rows.length;i+=2){/*pairs render as k,v*/}
+  cells=rows.map(([k,v])=>k===''?'<div class="k" style="background:#eef3f8"></div><div class="v"></div>':`<div class="k">${k}</div><div class="v">${v}</div>`).join('');
+  return `<div class="emp-card">
+    <div class="emp-kv">${cells}</div>
+    <div class="emp-photo"><div class="avatar" style="width:74px;height:74px;font-size:11px">NO<br>PHOTO</div>
+      ${vacation?'<span style="font-size:11px">display only</span>':'<button class="btn btn-sm">Browse…</button><span style="font-size:11px">Drop file here</span>'}</div>
+  </div>`;
+}
+function pgProfile(){
+  const tabs=[['personal','Personal info'],['education','Education'],['experience','Experience'],['interviews','Interviews'],
+    ['hire','Hire Details'],['document','Document'],['status','Status'],['history','History']];
+  return pageHead('Employee Profile',esc(S.emp.en)+' · Emp Code '+S.emp.code,PAGE_CODE['emp-profile'],
+    `<button class="btn btn-sm" onclick="go('emp-list')">List</button>
+     <button class="btn btn-sm" onclick="toast('Traversal scope unconfirmed — OQ-17')">‹‹ Previous</button>
+     <button class="btn btn-sm" onclick="toast('Traversal scope unconfirmed — OQ-17')">Next ››</button>`)
+  +`<div class="card"><div class="card-h"><h3>Employee Information</h3><div class="right"><span class="code-badge">PG-EMP-04</span></div></div>
+     <div class="card-b">${empCard(false)}</div></div>
+   <div class="card"><div class="tabs">${tabs.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="go('emp-profile','${k}')">${l}</button>`).join('')}</div>
+     <div style="padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;background:var(--surface-2)">
+       <span class="code-badge">${TAB_CODE[S.tab]}</span>
+       <button class="btn btn-sm btn-ghost" onclick="openNotes('${TAB_CODE[S.tab]}')">Spec notes for this tab</button></div>
+     <div class="card-b">${tabBody()}</div></div>`;
+}
+function tabBody(){
+  switch(S.tab){
+    case 'personal':return tabPersonal();
+    case 'education':return tabEducation();
+    case 'experience':return tabExperience();
+    case 'interviews':return tabInterviews();
+    case 'hire':return tabHire();
+    case 'document':return tabDocument();
+    case 'status':return tabStatus();
+    case 'history':return tabHistory();
+  }
+}
+function tabPersonal(){
+  return `<div style="display:flex;gap:9px;margin-bottom:6px"><button class="btn btn-accent btn-sm" onclick="toast('Save Personal Info — success message TBD (OQ-09)')">Save Personal Info</button></div>
+   <div class="section-label">Full Name</div>
+   <div class="grid-form">${txt('First Name','value="Kareem"')}${txt('Middle Name','value="Ibrahim"')}${txt('Last Name','value="Mohamed"')}${txt('Family Name','value="Farid"')}</div>
+   <div class="section-label">الاسم بالعربية</div>
+   <div class="grid-form">
+     <div class="f rtl"><label>الاسم الاول</label><input value="احمد"></div><div class="f rtl"><label>الاب</label><input value="ابراهيم"></div>
+     <div class="f rtl"><label>الجد</label><input value="محمد"></div><div class="f rtl"><label>العائلة</label><input value="فريد"></div></div>
+   <div class="section-label">Demographics</div>
+   <div class="grid-form">
+     <div class="f"><label>Gender</label><div class="radio-row"><label><input type="radio" name="g2" checked> Male</label><label><input type="radio" name="g2"> Female</label></div></div>
+     ${sel('Religion',['Muslim'])}
+     <div class="f"><label>BirthDate <span class="ro-tag">read-only</span></label><input value="09/11/1980" disabled></div>
+     ${sel('Nationality',['Egyptian'],'title="Editable here but disabled on create — CONFLICT-02"')}
+     <div class="f"><label>ID Type</label><input value="Civil ID" disabled></div>
+     ${txt('Civil ID','value="29001010100011" title="Appears editable here — CONFLICT-02"')}
+     ${txt('Birth Place')}${sel('Marital Status',['0','TBD / Requires Confirmation'],'title="Renders as 0 — CONFLICT-03"')}
+     ${txt('Mother Name')}${txt('Spouse Name')}
+     <div class="f"><label>Medical Insurance</label><div class="radio-row"><label><input type="radio" name="mi2"> No</label><label><input type="radio" name="mi2" checked> Yes</label></div></div>
+   </div>
+   <div class="section-label">Military Status</div>
+   <div class="grid-form c3">${sel('Military Status',['0','TBD / Requires Confirmation'])}${txt('Military Number')}${dt('Date')}</div>
+   <div class="section-label">Contact Information</div>
+   <div class="grid-form">
+     ${sel('Governerate',['Cairo'])}<div class="f rtl"><label>District</label><input value="الشرابيه"></div>
+     <div class="f rtl"><label>Street name</label><input value="احمد عباس"></div>
+     <div class="f" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="f"><label>Floor</label><input value="00"></div><div class="f"><label>Apt</label><input value="00"></div></div>
+     ${txt('Home Phone1')}${txt('Home Phone2')}${txt('Cell Phone1','value="01000000011"')}${txt('Cell Phone2')}
+     ${txt('Personal Email')}${txt('School Email')}
+   </div>
+   <div class="section-label">Emergency Contact</div>
+   <div class="grid-form">${txt('Name')}${txt('Home Phone')}${txt('Relationship')}${txt('Mobile Phone')}</div>
+   <div class="section-label">Children</div>
+   <div class="tablewrap"><table class="grid"><thead><tr>
+     <th>Child Name</th><th>National ID</th><th>Birth Date</th><th>Gender</th><th>in Our Schools</th><th>School</th><th>Student ID</th>
+     <th style="text-align:right"><button class="linkbtn" onclick="toast('New child row — inline vs modal unconfirmed (OQ-08)')">New</button></th></tr></thead>
+     <tbody><tr><td colspan="8" class="empty">No data to display</td></tr></tbody></table></div>
+   <div style="margin-top:16px"><button class="btn btn-accent btn-sm">Save Personal Info</button></div>`;
+}
+/* Inline grid + inline form — reproduces the source layout exactly:
+   the "New" / "Add X" trigger sits in the first header cell, the form opens
+   INSIDE the grid box directly under the header row, and its actions are
+   right-aligned text links (Save/Cancel on Education, Update/Cancel elsewhere). */
+function inlineGrid(o){
+  const span=o.cols.length+1;
+  return `<div class="section-label">${o.title}</div>
+   <div class="ig"><div class="tablewrap"><table class="grid">
+     <thead><tr>
+       <th style="width:140px"><button class="linkbtn" onclick="${o.toggle}">${o.addLabel}</button></th>
+       ${o.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+     ${o.open?`<tbody><tr class="igform"><td colspan="${span}">
+        ${o.form}
+        <div class="ig-actions">
+          <button class="linkbtn" onclick="${o.saveFn}">${o.saveLabel}</button>
+          <button class="linkbtn" onclick="${o.toggle}">Cancel</button>
+        </div></td></tr></tbody>`:''}
+     <tbody>${o.rows.length?o.rows.map((r,i)=>`<tr><td>${i+1}</td>${o.rowMap(r)}</tr>`).join('')
+       :(o.open?'':`<tr><td colspan="${span}" class="empty">No data to display</td></tr>`)}</tbody>
+   </table></div></div>`;
+}
+function tabEducation(){
+  return inlineGrid({title:'Education Information',addLabel:'Add Education',open:S.showEdu,toggle:"S.showEdu=!S.showEdu;render()",
+    cols:['Edu Level','University','Faculty','Grad Year','Grade','Major Studies','High School'],rows:S.edu,
+    rowMap:r=>`<td>${esc(r.lvl)}</td><td>${esc(r.uni)}</td><td>${esc(r.fac)}</td><td>${esc(r.yr)}</td><td>${esc(r.grd)}</td><td>${esc(r.maj)}</td><td>${esc(r.hs)}</td>`,
+    saveLabel:'Save',saveFn:'saveEdu()',
+    form:`<div class="grid-form c3">
+      <div class="f"><label>Edu Level:${req()}</label><select id="eLvl"><option></option><option>TBD / Requires Confirmation</option></select></div>
+      <div class="f"><label>University:</label><select id="eUni"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Faculty:</label><select id="eFac"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Grad Year:</label><select id="eYr"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Grade:</label><select id="eGrd"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Major Studies:</label><input id="eMaj"></div>
+      <div class="f" style="grid-column:span 2"><label>High School:</label><input id="eHs"></div></div>`})
+  +inlineGrid({title:'Language Information',addLabel:'Add Language',open:S.showLang,toggle:"S.showLang=!S.showLang;render()",
+    cols:['Language','Speak L','Read L','Write L'],rows:S.lang,
+    rowMap:r=>`<td>${esc(r.l)}</td><td>${esc(r.s)}</td><td>${esc(r.r)}</td><td>${esc(r.w)}</td>`,
+    saveLabel:'Save',saveFn:'saveLang()',
+    form:`<div class="grid-form">
+      <div class="f"><label>Language:${req()}</label><select id="lL"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Speak L:${req()}</label><select id="lS"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Read L:${req()}</label><select id="lR"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Write L:${req()}</label><select id="lW"><option></option>${TBDSEL}</select></div></div>`})
+  +inlineGrid({title:'Language Exam',addLabel:'Add Language Exam',open:S.showExam,toggle:"S.showExam=!S.showExam;render()",
+    cols:['Language','Level','Exam Date'],rows:S.exam,
+    rowMap:r=>`<td>${esc(r.l)}</td><td>${esc(r.lv)}</td><td>${esc(r.d)}</td>`,
+    saveLabel:'Save',saveFn:'saveExam()',
+    form:`<div class="grid-form c3">
+      <div class="f"><label>Language:${req()}</label><select id="xL"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Level:${req()}</label><select id="xLv"><option></option>${TBDSEL}</select></div>
+      <div class="f"><label>Exam Date:${req()}</label><input type="date" id="xD"></div></div>`})
+  +inlineGrid({title:'Certifications',addLabel:'Add certificate',open:S.showCert,toggle:"S.showCert=!S.showCert;render()",
+    cols:['Certificate Name'],rows:S.cert,rowMap:r=>`<td>${esc(r.n)}</td>`,
+    saveLabel:'Save',saveFn:'saveCert()',
+    form:`<div class="f"><label>Certificate Name:${req()}</label><input id="cN"></div>`});
+}
+function saveEdu(){S.edu.push({lvl:v('eLvl'),uni:v('eUni'),fac:v('eFac'),yr:v('eYr'),grd:v('eGrd'),maj:v('eMaj'),hs:v('eHs')});S.showEdu=false;toast('Education row added');render();}
+function saveLang(){S.lang.push({l:v('lL'),s:v('lS'),r:v('lR'),w:v('lW')});S.showLang=false;toast('Language row added');render();}
+function saveExam(){S.exam.push({l:v('xL'),lv:v('xLv'),d:v('xD')});S.showExam=false;toast('Language exam added');render();}
+function saveCert(){S.cert.push({n:v('cN')});S.showCert=false;toast('Certificate added');render();}
+function v(id){const e=$(id);return e?e.value:'';}
+
+function tabExperience(){
+  return inlineGrid({title:'Experience',addLabel:'New',open:S.showExp,toggle:"S.showExp=!S.showExp;render()",
+    cols:['Work Place','Date From','Date To','Job Title','Salary','Leaving Reason'],rows:S.exp,
+    rowMap:r=>`<td>${esc(r.wp)}</td><td>${esc(r.f)}</td><td>${esc(r.t)}</td><td>${esc(r.jt)}</td><td>${esc(r.sal)}</td><td>${esc(r.lr)}</td>`,
+    saveLabel:'Update',saveFn:'saveExp()',
+    form:`<div class="grid-form c2">
+      <div class="f" style="grid-column:span 2"><label>Work Place:${req()}</label><input id="pWp" placeholder="Free text — previous employer"></div>
+      <div class="f"><label>Date From:</label><input type="date" id="pF"></div>
+      <div class="f"><label>Job Title:${req()}</label><input id="pJt" placeholder="Free text"></div>
+      <div class="f"><label>Date To:</label><input type="date" id="pT"></div>
+      <div class="f"><label>Salary:</label><input type="number" id="pS"></div>
+      <div class="f" style="grid-column:span 2"><label>Leaving Reason:</label><input id="pLr"></div></div>`});
+}
+function saveExp(){S.exp.push({wp:v('pWp'),f:v('pF'),t:v('pT'),jt:v('pJt'),sal:v('pS'),lr:v('pLr')});S.showExp=false;toast('Experience row added');render();}
+/* PG-EMP-08 — field order and 2x2 layout reproduce the source exactly:
+   row 1  Interview Date:*  |  Comments:
+   row 2  Interviewer:*     |  Result:*
+   actions: Update / Cancel as right-aligned links. */
+function tabInterviews(){
+  return inlineGrid({title:'Interviews',addLabel:'New',open:S.showIntv,toggle:"S.showIntv=!S.showIntv;render()",
+    cols:['Interview Date','Comments','Interviewer','Result'],rows:S.intv,
+    rowMap:r=>`<td>${esc(r.d)}</td><td>${esc(r.c)}</td><td>${esc(r.i)}</td><td>${esc(r.r)}</td>`,
+    saveLabel:'Update',saveFn:'saveIntv()',
+    form:`<div class="grid-form c2" style="gap:16px 40px">
+      <div class="f"><label>Interview Date:${req()}</label><input type="date" id="iD"></div>
+      <div class="f"><label>Comments:</label><input id="iC"></div>
+      <div class="f"><label>Interviewer:${req()}</label><input id="iI" placeholder="Free text — not linked to a system user list"></div>
+      <div class="f"><label>Result:${req()}</label><select id="iR"><option></option>${TBDSEL}</select>
+        <span class="hint">Result lookup values were never captured (OQ-05)</span></div></div>`});
+}
+function saveIntv(){
+  if(!v('iD')||!v('iI')||!v('iR')){toast('Interview Date, Interviewer and Result are marked * in the source UI');return;}
+  S.intv.push({d:fmt(v('iD')),c:v('iC'),i:v('iI'),r:v('iR')});S.showIntv=false;toast('Interview added');render();}
+
+function tabHire(){
+  return `<div class="grid-form">
+     ${dt('Hire Date','value="2025-09-01"')}
+     ${sel('Emp Category',['Non Teaching','TBD / Requires Confirmation'])}
+     ${sel('Work Place:',['HeadQuarter','Main Campus','Maadi Academy'],'title="Shows HeadQuarter while the summary card shows Main Campus — CONFLICT-01"')}
+     <div class="f"><label>Branch: <span class="derived">derived from Work Place</span></label><input value="2008000" disabled></div>
+     ${sel('Department',['Administartion','TBD / Requires Confirmation'])}
+     ${sel('Job Title',['Administrative','TBD / Requires Confirmation'])}
+     ${sel('Hire Type',['غير مؤمن عليه','TBD / Requires Confirmation'])}
+     ${sel('Hire Type Category',['غير معتمد','TBD / Requires Confirmation'])}
+     ${sel('Supervisor Department',['--Select Department --'])}
+     ${sel('Supervisor Name :',['--Select Supervisor --'],'title="Filtered by Supervisor Department — BR-EMP-016"')}
+     ${sel('Stage Name',['None','KG Stage','Lower Primary','Upper Primary'])}
+     ${txt('Number of Periods','type="number" value="0"')}
+   </div>
+   <div class="section-label">Ministry Of Education Information</div>
+   <div class="radio-row"><label><input type="radio" name="moe"> تربوي</label><label><input type="radio" name="moe"> غير تربوي</label>
+     <span class="hint" style="color:var(--text-3);font-size:11.5px">Neither option was selected in the source record</span></div>
+   <div class="section-label">Insurance Information</div>
+   <div class="f"><label>Insurred? <span class="ro-tag">read-only — derived</span></label>
+     <div class="radio-row"><label><input type="radio" name="ins" disabled> Yes</label><label><input type="radio" name="ins" checked disabled> No</label></div></div>
+   <div style="margin-top:20px"><button class="btn btn-accent btn-sm" onclick="toast('Save Hire Info — success message TBD')">Save Hire Info</button></div>`;
+}
+function tabDocument(){
+  return `<div style="display:flex;gap:9px;margin-bottom:14px">
+     <button class="btn ${S.showDoc?'btn-warn':'btn-primary'} btn-sm" onclick="S.showDoc=!S.showDoc;render()">${S.showDoc?'Hide':'+ Add New'}</button>
+     <button class="btn btn-sm" onclick="toast('Download format (ZIP / merged PDF) is TBD — OQ-15')">Download ${esc(S.emp.en.split(' ')[0])}'s Docs</button>
+     <span class="pill ${S.docs.length>=9?'ok':'bad'}" style="margin-left:auto">Uploaded Docs: ${S.docs.length} of 9 · ${S.docs.length>=9?'Complete':'Incomplete'}</span></div>
+   ${S.showDoc?`<div class="card" style="background:var(--surface-2)"><div class="card-b">
+     <div class="grid-form c3">
+       <div class="f"><label>Document Type :</label><select id="dT"><option></option><option>TBD / Requires Confirmation — 9 required types (OQ-04)</option></select></div>
+       <div class="f"><label>Allowed Files (.jpg,.jpeg,.png,.pdf)</label><input type="file" id="dF" accept=".jpg,.jpeg,.png,.pdf"></div>
+       <div class="f"><label>Receiving Date :</label><input type="date" id="dR"></div>
+     </div>
+     <div style="margin-top:14px"><button class="btn btn-accent btn-sm" onclick="saveDoc()">Save Document</button></div>
+   </div></div>`:''}
+   <div class="section-label">Employee Documents</div>
+   <div class="tablewrap"><table class="grid"><thead>
+     <tr><th>#</th><th>S</th><th>Document Name:</th><th>File</th><th>Received Date:</th><th>Return Date:</th><th>Creation Date</th><th>Processed by</th><th>Due Date:</th><th></th></tr>
+     <tr class="filters"><td><input></td><td><input></td><td><select><option></option></select></td><td><input></td><td><select><option></option></select></td><td><select><option></option></select></td><td><select><option></option></select></td><td><input></td><td><select><option></option></select></td><td></td></tr></thead>
+     <tbody>${S.docs.length?S.docs.map((d,i)=>`<tr><td>${i+1}</td><td></td><td>${esc(d.t)}</td><td>📎</td><td>${esc(d.r)}</td>
+       <td style="color:var(--text-3)">—</td><td>${new Date().toLocaleDateString()}</td><td>EduHub</td><td style="color:var(--text-3)">—</td><td></td></tr>`).join('')
+       :'<tr><td colspan="10" class="empty">No data to display</td></tr>'}</tbody></table></div>
+   <div class="callout" style="margin-top:14px"><b>Unresolved (OQ-12):</b> Return Date, Creation Date, Processed by and Due Date appear only in this grid — there is no matching input on the upload form. Their maintenance path is unknown, so they are rendered read-only here.</div>`;
+}
+function saveDoc(){S.docs.push({t:v('dT')||'TBD type',r:v('dR')||'—'});S.showDoc=false;toast('Document saved — Uploaded Docs now '+S.docs.length+' of 9');render();}
+function tabStatus(){
+  return `<div class="callout"><b>Restricted operation.</b> In the source system the Terminate / Reactivate controls render disabled for the observed user (BR-EMP-023), and a separate <b>Approve Employee Status</b> page exists (BR-EMP-024). They are shown enabled here so the flow can be walked through.</div>
+   <div class="radio-row" style="margin-bottom:16px">
+     <label><input type="radio" name="stmode" checked onchange="render()"> Terminate</label>
+     <label><input type="radio" name="stmode" onchange="toast('The Reactivate form was never captured — OQ-07')"> Reactivate</label></div>
+   <div class="grid-form c3">
+     ${sel('Termination Reason',['','TBD / Requires Confirmation'])}
+     ${dt('Last Working Date')}
+     <div class="f" style="grid-column:span 3"><label>Comment</label><textarea rows="4"></textarea></div>
+   </div>
+   <div style="margin-top:16px"><button class="btn btn-danger btn-sm" onclick="toast('No confirmation prompt was observed before Terminate — OQ-10')">Terminate</button></div>
+   <div class="section-label">History</div>
+   ${historyTable()}`;
+}
+function historyTable(){
+  return `<div class="tablewrap"><table class="grid"><thead><tr><th>Employee Status</th><th>User Name</th><th>Machine Ip</th><th>Date</th><th>Time</th></tr></thead>
+   <tbody><tr><td>Employee Status has been updated from Incomplete Data To Active</td><td>hr.approver</td>
+   <td style="font-family:var(--mono);font-size:12px">10.0.0.15</td><td>Sun Sep 2025</td><td>11:07</td></tr></tbody></table></div>`;
+}
+function tabHistory(){
+  return `<div class="callout"><b>Not supplied.</b> The History tab exists in the tab strip but its contents were never captured (OQ-06). It is assumed to show a broader audit trail than the status history embedded in the Status tab — that assumption is <b>not</b> rendered as fact below.</div>
+   <div class="section-label">Status history (from the Status tab — shown for reference only)</div>${historyTable()}`;
+}
+
+/* ---- PG-DOC-01 ---- */
+function pgDocList(){
+  const crit=['By Stage/Department/Status/Category','ID','Code','Work Place','Job Title','Mobile/Phone','Name','Hire Type','Documents Status'];
+  const critInput=S.docSearchBy==='By Stage/Department/Status/Category'
+    ? `<div class="grid-form">${sel('Stage',['KG Stage','--ALL--','Lower Primary','Upper Primary'])}${sel('Department',['--ALL--','Administartion'])}${sel('Status',['--ALL--','Active','Incomplete Data'])}${sel('Category',['--ALL--','Non Teaching'])}</div>`
+    : `<div class="grid-form"><div class="f"><label>${esc(S.docSearchBy)}</label><input placeholder="TBD — input not captured in source"></div></div>`;
+  return pageHead('Employees Documents','Population-level document compliance monitor and batch status recalculation.','PG-DOC-01')
+  +`<div class="card"><div class="card-b">
+     ${critRadios(crit,S.docSearchBy,'setDocCrit')}
+     ${critInput}
+     <div class="section-label">Language</div>
+     <div class="radio-row"><label><input type="radio" name="lg"> 🇬🇧 EN</label><label><input type="radio" name="lg" checked> 🇪🇬 AR</label></div>
+     <div style="display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap">
+       <button class="btn btn-accent" onclick="runDocSearch()">Search</button>
+       <button class="btn btn-warn" onclick="toast('Scope of the batch update is unresolved — OQ-20')">Update Documents Status</button>
+       <span style="margin-left:auto;color:var(--text-2);font-size:12.5px">Last Status Update: <b>Thursday, 30 October 2025 10:05 AM</b></span>
+     </div></div></div>
+   <div class="card"><div class="card-b tight">
+     <div class="groupbar">Drag a column header here to group by that column</div>
+     <div class="tablewrap"><table class="grid"><thead>
+       <tr><th>Ser</th><th>Details</th><th>Pic</th><th>Emp Code</th><th>Employee Name</th><th>ID</th><th>Cell Phone</th><th>Docs. Status</th><th>Docs Count</th><th>Due Date</th><th>Status</th><th>Work Place</th><th></th></tr>
+       <tr class="filters"><td><input></td><td><input></td><td></td><td><input></td><td><input></td><td><input></td><td><input></td><td><select><option></option></select></td><td><input></td><td><input></td><td><select><option></option></select></td><td><select><option></option></select></td><td></td></tr></thead>
+       <tbody>${S.docLoading?`<tr><td colspan="13" class="empty">Loading…</td></tr>`
+        :S.docLoaded?EMPLOYEES.map(e=>`<tr><td>${e.ser}</td>
+          <td><button class="icon-btn" onclick="toast('Target tab of this drill-through is unconfirmed — OQ-22')">▤</button></td>
+          <td><div class="avatar ${e.pic?'has':''}">${e.pic?'👤':'—'}</div></td><td>${e.code}</td><td>${esc(e.en)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${e.id}</td><td>${e.cell}</td>
+          <td><span class="pill bad">Incomplete</span></td><td>0</td><td style="color:var(--text-3)">TBD</td>
+          <td><span class="pill ok">Active</span></td><td>${e.wp}</td><td></td></tr>`).join('')
+        :`<tr><td colspan="13" class="empty">Set your criteria and press Search.</td></tr>`}</tbody></table></div>
+     ${S.docLoaded?pager('Pagination not visible in the source capture (OQ-32)',false,30):''}
+   </div></div>`;
+}
+function setDocCrit(c){S.docSearchBy=c;render();}
+function runDocSearch(){S.docLoading=true;S.docLoaded=false;render();setTimeout(()=>{S.docLoading=false;S.docLoaded=true;render();},700);}
+
+/* ---- PG-APR-01 ---- */
+function pgApprove(){
+  return pageHead('Approve Employee Status','Approval queue for pending employee status changes.','PG-APR-01')
+  +`<div class="card"><div class="card-h"><h3>Selection Criteria</h3></div><div class="card-b">
+     <div class="grid-form">
+       ${sel('Work Place',['Maadi Academy','Main Campus','HeadQuarter'])}
+       ${sel('Stage',['-- All --','KG Stage','Lower Primary','Upper Primary'])}
+       ${sel('* Department <span class="hint" style="font-size:10.5px">(marker meaning unclear — OQ-24)</span>',['All','Administartion'])}
+       ${sel('Category',['All','Non Teaching'])}
+     </div>
+     <div class="or-sep">OR</div>
+     <div class="crit-radios">
+       ${['Code','Mobile','ID','Name','Job Title'].map(c=>`<label><input type="radio" name="apr" ${c==='Code'?'checked':''} onchange="S.aprPath='${c}';render()"> ${c}</label>`).join('')}
+     </div>
+     <div class="grid-form c3" style="margin-top:6px"><div class="f"><label>${esc(S.aprPath)}:</label><input placeholder="${S.aprPath==='Code'?'e.g. 30912':'TBD — input not captured'}"></div></div>
+     <div style="margin-top:16px"><button class="btn btn-accent" onclick="toast('Pending queue was empty in the source capture')">Search</button></div>
+   </div></div>
+   <div class="card"><div class="card-h"><h3>Approve Employee Status</h3></div><div class="card-b tight">
+     <div class="tablewrap"><table class="grid"><thead><tr>
+       <th style="width:40px"><input type="checkbox" title="Selection mechanism is unconfirmed — OQ-25"></th>
+       <th>SN</th><th>Name</th><th>Code</th><th>Status Date</th><th>Status Name</th></tr></thead>
+       <tbody><tr><td colspan="6" class="empty">No pending status changes.</td></tr></tbody></table></div>
+     <div style="padding:14px;border-top:1px solid var(--line);display:flex;gap:9px;align-items:center">
+       <button class="btn btn-primary btn-sm" onclick="toast('No confirmation prompt was observed before Approve')">Approve</button>
+       <span style="color:var(--text-3);font-size:12.5px">No Reject action exists in the source system (OQ-27).</span></div>
+   </div></div>
+   <div class="callout"><b>Assumption rendered visually:</b> the checkbox column above does not exist in the source screen. It is shown because a batch <b>Approve</b> button sits under a multi-row grid, but how rows are selected is unconfirmed (OQ-25).</div>`;
+}
+
+/* ============================================================
+   REPORTS 3-13 — proposed layouts
+   No screenshots exist for these. Each is built from (a) the report name
+   and (b) fields that are CONFIRMED to exist in the documented entities.
+   Anything that would require an unseen entity is shown as a column but
+   flagged; no formulas, lookup values or messages are invented.
+   ============================================================ */
+const SRC_CRIT=['Stage','Department','Status','Category','Job Title','Hire Type','Work Place'];
+const REPORT_DEFS={
+ 'rpt-03':{no:3,name:'Employee Evaluation',code:'PG-RPT-03',entity:'Evaluation (module not supplied)',
+   crit:SRC_CRIT.concat(['Date From','Date To']),
+   cols:['Ser','Emp Code','Employee Name','Department','Job Title','Evaluation Period','Evaluator','Score','Result'],
+   conf:[true,true,true,true,true,false,false,false,false],
+   note:'Employee, Department and Job Title are confirmed fields. Evaluation Period, Evaluator, Score and Result require the Evaluation entity, which has never been supplied (OQ-37).'},
+ 'rpt-04':{no:4,name:'Employee Evaluation By Employee New',code:'PG-RPT-04',entity:'Evaluation (module not supplied)',
+   crit:['Code','Name','Academic Year'],single:true,
+   cols:['Ser','Evaluation Criterion','Weight','Score','Comment'],
+   conf:[true,false,false,false,false],
+   note:'A single-employee breakdown, implied by the report name “By Employee”. The criterion/weight/score structure is proposed — the Evaluation entity was never supplied (OQ-37).'},
+ 'rpt-05':{no:5,name:'Employee Evaluation New',code:'PG-RPT-05',entity:'Evaluation (module not supplied)',
+   crit:SRC_CRIT.concat(['Date From','Date To']),
+   cols:['Ser','Emp Code','Employee Name','Department','Job Title','Evaluation Period','Score','Result'],
+   conf:[true,true,true,true,true,false,false,false],
+   note:'Second-generation variant of report 3 (BR-RPT-003). The functional difference between the two generations is unknown.'},
+ 'rpt-06':{no:6,name:'Employee Personal Details',code:'PG-RPT-06',entity:'Employee (E-01) — fully documented',
+   crit:SRC_CRIT.concat(['From Hire Date','To Hire Date']),
+   cols:['Emp Code','Emp Id','English Full Name','Arabic Full Name','Gender','Religion','BirthDate','Nationality','Marital Status','Governerate','District','Cell Phone1','Personal Email','Hire Date','Department','Job Title','Work Place','Status'],
+   conf:new Array(18).fill(true),
+   note:'Every column here is a CONFIRMED field of the documented Employee entity (PG-EMP-05 / PG-EMP-09). Only the column selection is proposed.'},
+ 'rpt-07':{no:7,name:'Employee Returned Documents',code:'PG-RPT-07',entity:'Employee Document (E-13) — documented',
+   crit:SRC_CRIT.concat(['Document Name','Document Status','From Hire Date','To Hire Date']),
+   cols:['Ser','Emp Code','Employee Name','Document Name','Received Date','Return Date','Processed by','Due Date'],
+   conf:[true,true,true,true,true,true,true,true],
+   note:'All columns are confirmed grid columns of PG-EMP-10. This report explains the otherwise unexplained Return Date column (OQ-12 / OQ-39).'},
+ 'rpt-08':{no:8,name:'Employee Training',code:'PG-RPT-08',entity:'Training (module not supplied)',
+   crit:SRC_CRIT.concat(['Date From','Date To']),
+   cols:['Ser','Emp Code','Employee Name','Department','Job Title','Training Name','Date From','Date To','Provider','Status'],
+   conf:[true,true,true,true,true,false,false,false,false,false],
+   note:'Training Name, Provider and Status require the Training entity, which has never been supplied (OQ-38).'},
+ 'rpt-09':{no:9,name:'Employees By Gender',code:'PG-RPT-09',entity:'Employee (E-01) — confirmed fields',
+   crit:SRC_CRIT,agg:'gender',
+   cols:['S.N','Work Place','Male','Female','Total','Male %','Female %'],
+   conf:[true,true,true,true,true,false,false],
+   note:'Gender and Work Place are confirmed Employee fields. The percentage columns follow the pattern of PG-RPT-01 — but no formula is asserted (OQ-45).'},
+ 'rpt-10':{no:10,name:'Human Resources Statistic',code:'PG-RPT-10',entity:'Employee (E-01) — confirmed fields',
+   crit:SRC_CRIT,agg:'hr',
+   cols:['S.N','Department','Non Teaching','Teaching','Total','Active','Incomplete Data'],
+   conf:[true,true,true,true,true,true,true],
+   note:'Built entirely from confirmed lookup dimensions (Department, Emp Category, Status). Note CONFLICT-04: the PG-RPT-01 page banner reads “Employee Statistacal Report”, which may in fact belong to this report.'},
+ 'rpt-11':{no:11,name:'Man Power Control',code:'PG-RPT-11',entity:'Establishment / headcount plan (not supplied)',
+   crit:SRC_CRIT,
+   cols:['S.N','Work Place','Department','Job Title','Approved Positions','Filled','Vacant','Variance'],
+   conf:[true,true,true,true,false,false,false,false],
+   note:'Work Place, Department and Job Title are confirmed. Approved Positions / Filled / Vacant require an establishment entity that has never appeared in any screen (OQ-41).'},
+ 'rpt-12':{no:12,name:'Number of Employees in All Schools (Chart Report)',code:'PG-RPT-12',entity:'School (E-18) — 31 confirmed values',chart:true,
+   crit:SRC_CRIT,
+   cols:['S.N','School','Employees'],conf:[true,true,false],
+   note:'The 31 school names are confirmed. A per-school HEADCOUNT figure was never supplied, so the chart plots the only school-level counts that exist in the source data — the New Hired Emp. column of PG-RPT-01. Treat the magnitudes as placeholders.'},
+ 'rpt-13':{no:13,name:'Students Discounts',code:'PG-RPT-13',entity:'Child (E-05) + Student (Students module, not supplied)',
+   crit:SRC_CRIT.concat(['Academic Year']),
+   cols:['Ser','Emp Code','Employee Name','Child Name','National ID','in Our Schools','School','Student ID','Discount %','Academic Year'],
+   conf:[true,true,true,true,true,true,true,true,false,true],
+   note:'Child Name, National ID, in Our Schools, School and Student ID are confirmed columns of the Children grid on PG-EMP-05. The Discount % itself requires the Students module, which has not been supplied (OQ-40).'}
+};
+function pgReports(){
+  return pageHead('Reports','13 reports available in the Staff → Profile area.','PG-RPT-00')
+  +`<div class="card"><div class="card-b tight"><ul class="rep-list">
+     ${REPORTS.map((r,i)=>{
+       const key=i===0?'rpt-01':i===1?'rpt-02':'rpt-'+String(i+1).padStart(2,'0');
+       const src=i<2;
+       return `<li><button onclick="go('${key}')">
+       <span class="no">${i+1}</span><span>${esc(r)}</span>
+       <span class="badge">${src?'<span class="pill ok">from screenshots</span>':'<span class="pill prop">proposed</span>'}</span></button></li>`;}).join('')}
+   </ul></div></div>
+   <div class="proposed"><b>How the remaining 11 reports were built.</b> No screenshots exist for reports 3–13, so each layout is derived from the report name plus fields that are <b>confirmed</b> to exist in the documented entities. Confirmed columns are shown normally; columns that need an entity never supplied (Evaluation, Training, Establishment, Student Discount) are marked <span class="pill prop">proposed</span> in the grid header. No formulas, lookup values or messages have been invented.</div>`;
+}
+function pgReportGeneric(key){
+  const d=REPORT_DEFS[key];
+  return pageHead(d.name,'Proposed layout — no source screenshot exists for this report.',d.code,
+    `<button class="btn btn-sm" onclick="go('reports')">← Reports</button>`)
+  +`<div class="proposed"><b>Not supplied — proposed layout.</b> Source entity: <b>${esc(d.entity)}</b>.<br>${d.note}</div>
+   <div class="card"><div class="card-h"><h3>Search By:</h3><div class="right"><span class="pill mute">Shared search component — BR-STF-001</span></div></div>
+   <div class="card-b">
+     <div class="grid-form">${d.crit.map(c=>
+        /Date/.test(c)?dt(c):sel(c,critValues(c))).join('')}</div>
+     <div style="margin-top:18px;text-align:center"><button class="btn btn-warn" style="min-width:170px" onclick="S.rptShown=true;render()">Show</button></div>
+   </div></div>
+   ${S.rptShown?`<div class="card"><div class="card-h"><h3>Results</h3>
+      <div class="right"><button class="btn btn-sm" onclick="toast('Export formats are unknown — OQ-46')">Export ▾</button></div></div>
+     <div class="card-b tight">
+       ${d.chart?chartBlock():''}
+       <div class="tablewrap"><table class="grid"><thead><tr>${d.cols.map((c,i)=>
+         `<th>${esc(c)}${d.conf[i]?'':' <span class="pill prop" style="font-size:9.5px;padding:1px 6px">proposed</span>'}</th>`).join('')}</tr></thead>
+        <tbody>${reportRows(key,d)}</tbody></table></div>
+       ${pager(d.agg||d.chart?'Aggregated by the dimension shown':'Row-level extract',false,30)}
+     </div></div>`:''}`;
+}
+function critValues(c){
+  const m={'Stage':['--ALL--','KG Stage','Lower Primary','Upper Primary'],
+   'Department':['--ALL--','Administartion','Disipline','Bus Matron'],
+   'Status':['--ALL--','Active','Incomplete Data'],'Category':['--ALL--','Non Teaching'],
+   'Job Title':['--ALL--','Administrative'],'Hire Type':['--ALL--','غير مؤمن عليه'],
+   'Work Place':['--ALL--'].concat(SCHOOLS.map(s=>s[0])),
+   'Document Name':['--ALL--','TBD / Requires Confirmation'],'Document Status':['--ALL--','TBD / Requires Confirmation'],
+   'Academic Year':['2025-2026','TBD'],'Code':[''],'Name':[''],
+   'Emp Category':['--ALL--','Non Teaching','Teaching'],
+   'Payroll Month/Year':['Mar 2026','Feb 2026','Jan 2026'],
+   'Run Status':['--ALL--','Draft','Calculated','Approved','Posted'],
+   'Loan Type':['--ALL--','Personal Loan','Salary Advance','Emergency Loan','Housing Loan'],
+   'Loan Status':['--ALL--','Pending Approval','Active','Closed','Suspended'],
+   'Penalty Type':['--ALL--','Verbal Warning','Written Warning','Warning with deduction','Absence','Other deduction'],
+   'Overtime Type':['--ALL--','Normal','Weekend','Public Holiday'],
+   'Increase Type':['--ALL--','Annual','Promotion','Merit','Cost of Living','Individual'],
+   'Effective Year':['2026','2025'],
+   'Attendance Status':['--ALL--','Present','Absent','Late','Early Leave','On Vacation','On Permission','Holiday'],
+   'Permission Type':['--ALL--','Late Arrival','Early Leave','Personal','Official Assignment'],
+   'Evaluation Period':['2025-2026 Mid-year','2025-2026 Annual'],
+   'Evaluation Type':['--ALL--','Probation','Periodic','Annual','Promotion'],
+   'Evaluator':['--ALL--','hr.officer','hr.approver'],
+   'Course Category':['--ALL--','Pedagogical','Technical','Compliance','Leadership','Language'],
+   'Course Status':['--ALL--','Planned','In Progress','Completed','Cancelled'],
+   'Provider':['--ALL--','Internal','Future Skills','Civil Defence'],
+   'Insurance Type':['--ALL--','Social','Medical'],
+   'Insurance Office':['--ALL--','Cairo — Al Sharabiya','Provider A'],
+   'Job Title Applied':['--ALL--','Teacher — English','Teacher — Science','Administrative'],
+   'Application Status':['--ALL--','New','Screening','Interview','Offer','Hired','Rejected'],
+   'Settlement Status':['--ALL--','Draft','Pending Approval','Approved','Paid'],
+   'Termination Reason':['--ALL--','Resignation','End of contract','Dismissal'],
+   'Active':['--ALL--','Yes','No']};
+  return m[c]||['--ALL--','TBD / Requires Confirmation'];
+}
+function reportRows(key,d){
+  const span=d.cols.length, na='<span style="color:var(--text-3)">—</span>';
+  if(key==='rpt-06') return EMPLOYEES.map(e=>`<tr><td>${e.code}</td><td style="font-family:var(--mono);font-size:12px">${e.id}</td>
+     <td>${esc(e.en)}</td><td dir="rtl">${esc(e.ar)}</td><td>Male</td><td>Muslim</td><td>${e.dob}</td><td>Egyptian</td><td>0</td>
+     <td>Cairo</td><td dir="rtl">الشرابيه</td><td>${e.cell}</td><td>${na}</td><td>01 September 2025</td>
+     <td>Administartion</td><td>Administrative</td><td>${e.wp}</td><td><span class="pill ok">${e.st}</span></td></tr>`).join('');
+  if(key==='rpt-09') return SCHOOLS.slice(0,6).map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s[0])}</td>
+     <td>${na}</td><td>${na}</td><td>${na}</td><td>0 %</td><td>0 %</td></tr>`).join('')
+     +`<tr><td colspan="${span}" style="background:#f5efff;color:#4a2b7d;font-size:12.5px">Gender counts per work place were never supplied — cells left empty rather than fabricated.</td></tr>`;
+  if(key==='rpt-10') return ['Administartion','Disipline','Bus Matron'].map((dep,i)=>
+     `<tr><td>${i+1}</td><td>${dep}</td><td>${na}</td><td>${na}</td><td>${na}</td><td>${na}</td><td>${na}</td></tr>`).join('')
+     +`<tr><td colspan="${span}" style="background:#f5efff;color:#4a2b7d;font-size:12.5px">Department-level counts were never supplied. Dimensions are real; values are not invented.</td></tr>`;
+  if(key==='rpt-12') return SCHOOLS.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s[0])}</td><td>${s[1]}</td></tr>`).join('')
+     +`<tr style="background:var(--surface-2);font-weight:700"><td></td><td>Total</td><td>${SCHOOLS.reduce((a,s)=>a+s[1],0)}</td></tr>`;
+  return `<tr><td colspan="${span}" class="empty">No data — this report needs the <b style="color:var(--text-2)">${esc(d.entity)}</b> entity, which has not been supplied.<br>
+    <span style="font-size:12px">The column set above is the proposal for review; row data has deliberately not been fabricated.</span></td></tr>`;
+}
+function chartBlock(){
+  const max=Math.max(...SCHOOLS.map(s=>s[1])), W=1180, bw=32, gap=6, H=280;
+  const bars=SCHOOLS.map((s,i)=>{
+    const h=Math.round((s[1]/max)*(H-46)), x=14+i*(bw+gap), y=H-30-h;
+    return `<rect class="bar" x="${x}" y="${y}" width="${bw}" height="${h}" rx="3"><title>${esc(s[0])}: ${s[1]}</title></rect>
+            <text x="${x+bw/2}" y="${y-5}" text-anchor="middle" font-size="9.5" fill="#5b6779">${s[1]}</text>
+            <text x="${x+bw/2}" y="${H-16}" text-anchor="middle" font-size="8.5" fill="#8a94a6" transform="rotate(35 ${x+bw/2} ${H-16})">${esc(s[0].slice(0,14))}</text>`;
+  }).join('');
+  return `<div class="chart" style="padding:16px"><svg width="${W}" height="${H+40}" viewBox="0 0 ${W} ${H+40}">
+     <line x1="10" y1="${H-30}" x2="${W-10}" y2="${H-30}" stroke="#e4e8f0"/>${bars}</svg>
+   <div style="font-size:12px;color:#4a2b7d;background:#f5efff;border:1px solid #d6c7f0;border-radius:7px;padding:10px 13px;margin-top:10px">
+     <b>Placeholder magnitudes.</b> A per-school headcount was never supplied. This chart plots the New Hired Emp. column from PG-RPT-01 — the only confirmed school-level counts in the source data.</div></div>`;
+}
+
+/* ---- PG-RPT-01 ---- */
+function pgRpt01(){
+  const tot=SCHOOLS.reduce((a,s)=>[a[0]+s[1],a[1]+s[2]],[0,0]);
+  return pageHead('Employee Statistacal Report','Launched from “Active And In-Active Employees” — see CONFLICT-04.','PG-RPT-01',
+    `<button class="btn btn-sm" onclick="go('reports')">← Reports</button>`)
+  +`<div class="card"><div class="card-b">
+     <div class="grid-form" style="grid-template-columns:repeat(5,1fr)">
+       ${sel('Stage',['--ALL--','KG Stage','Lower Primary','Upper Primary'])}${sel('Department',['--ALL--','Administartion'])}
+       ${sel('Job Title',['--ALL--','Administrative'])}${sel('Category',['--ALL--','Non Teaching'])}${sel('Hire Type',['--ALL--'])}
+     </div>
+     <div class="grid-form c3" style="margin-top:16px;align-items:end">
+       <div class="f"><label>Report Type:</label><div class="radio-row">
+         <label><input type="radio" name="rt" checked> All</label><label><input type="radio" name="rt"> New Hired Emp.</label><label><input type="radio" name="rt"> Withdrawn Emp.</label></div></div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${dt('Date From')}${dt('Date To')}</div>
+       ${sel('Payroll Month/Year',['','TBD / Requires Confirmation'],'title="Not mandatory — unset renders as Jan 0001 (OQ-44)"')}
+     </div>
+     <div style="margin-top:18px;text-align:center"><button class="btn btn-warn" style="min-width:180px" onclick="S.rptShown=true;render()">Show</button></div>
+   </div></div>
+   ${S.rptShown?`
+   <div class="card"><div class="card-h"><h3>Results</h3><div class="right">
+     <button class="btn btn-sm" onclick="toast('Export formats are unknown — OQ-46')">Export ▾</button>
+     <button class="btn btn-sm btn-ghost" disabled>Clear Filter</button></div></div>
+   <div class="card-b tight">
+     <div style="padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)">
+       <div class="tablewrap"><table class="grid" style="font-size:12.5px">
+        <tbody><tr><td><b>Report Type</b></td><td>All</td><td><b>Stage</b></td><td>All</td><td><b>Department</b></td><td>All</td><td><b>Job Title</b></td><td>All</td></tr>
+        <tr><td><b>Category</b></td><td>All</td><td><b>Hire Type</b></td><td>All</td><td><b>Date From</b></td><td>N/A</td><td><b>Date To</b></td><td>N/A</td></tr></tbody></table></div>
+       <div style="font-size:11.5px;color:var(--text-3);margin-top:8px">Payroll Month/Year is a criterion but is not echoed here (INC-19).</div>
+     </div>
+     <div class="tablewrap"><table class="grid">
+       <thead><tr><th>S.N</th><th>School</th><th>New Hired Emp.</th><th>Withdrawn Emp.</th><th>Diff.</th><th>Payroll Employees in (Jan 0001)</th><th>New Hired Perc. %</th><th>Withdrawn Perc. %</th></tr>
+       <tr class="filters"><td></td><td><select><option></option>${SCHOOLS.map(s=>`<option>${esc(s[0])}</option>`).join('')}</select></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></thead>
+       <tbody>${SCHOOLS.map((s,i)=>`<tr${i===6?' style="background:#fffaf3"':''}>
+         <td>${i+1}</td><td>${esc(s[0])}${i===6?' <span class="pill warn" title="Derived by reconciliation with the Total row">derived</span>':''}</td>
+         <td><button class="linkbtn" onclick="drill('${esc(s[0]).replace(/'/g,"")}','New Hired Emp.')">${s[1]}</button></td>
+         <td>${s[2]?`<button class="linkbtn" onclick="drill('${esc(s[0]).replace(/'/g,"")}','Withdrawn Emp.')">${s[2]}</button>`:'0'}</td>
+         <td>+${s[1]-s[2]}</td><td>0</td><td>0 %</td><td>0 %</td></tr>`).join('')}</tbody>
+       <tfoot><tr><td></td><td>Total</td><td>${tot[0]}</td><td>${tot[1]}</td><td>${tot[0]-tot[1]}</td><td>0</td><td>0 %</td><td>0 %</td></tr></tfoot>
+     </table></div>
+     ${pager('31 items',false,200)}
+   </div></div>
+   <div class="callout"><b>Reproduced faithfully:</b> the column header reads <b>Payroll Employees in (Jan 0001)</b> because no Payroll Month/Year was selected — an uninitialised date. The denominator is therefore 0 and both percentage columns render 0 %. The percentage formulas are <b>not documented and have not been invented</b> (OQ-45).</div>`:''}`;
+}
+function drill(school,type){
+  showModal('Employees list',`Branch : ${esc(school)} , Employees Type : Active Employees`,
+   `<div class="tablewrap"><table class="grid"><thead>
+     <tr><th>#</th><th>Ser</th><th>Stage</th><th>Pic</th><th>Employee ID</th><th>Employee Code</th><th>Employee Name</th><th>Department</th><th>Job title</th><th>Hire Date</th><th>Nationality</th></tr>
+     <tr class="filters"><td></td><td><input></td><td><select><option></option></select></td><td></td><td><input></td><td><input></td><td><input></td><td><select><option></option></select></td><td><input></td><td><select><option></option></select></td><td><input></td></tr></thead>
+     <tbody>${DRILL.map(d=>`<tr><td></td><td>${d.ser}</td><td>${d.stage}</td><td><div class="avatar">—</div></td>
+       <td style="font-family:var(--mono);font-size:12px">${d.id}</td><td>${d.code}</td><td>${esc(d.name)}</td>
+       <td>${d.dep}</td><td>${d.job}</td><td>${d.hire}</td><td>${d.nat}</td></tr>`).join('')}</tbody></table></div>
+    <div style="padding:14px 18px;background:var(--warn-soft);color:#8a3a08;font-size:12.5px;border-top:1px solid #ffd9b8">
+      <b>CONFLICT-05.</b> This list was reached by clicking <b>${esc(type)}</b> yet is captioned “Active Employees”, and contains employees hired in 2011, 2013 and 2019. Unresolved (OQ-49). There is no drill-through to the employee record and no export here.</div>`);
+}
+
+/* ---- PG-RPT-02 ---- */
+function pgRpt02(){
+  const F=[[1,'Staff ID'],[2,'Staff Code'],[3,'Employee Name'],[4,'Name in English'],[5,'Mobile'],[6,'Home Phone'],[7,'Nationality'],
+           [8,'Department'],[9,'Supervisor Name'],[10,'Hire Date'],[11,'Job Title']];
+  return pageHead('Employee Documents','Configurable document extract — you choose the population and the output columns.','PG-RPT-02',
+    `<button class="btn btn-sm" onclick="go('reports')">← Reports</button>`)
+  +`<div class="card"><div class="card-h"><h3>Search By:</h3></div><div class="card-b">
+     <div class="grid-form">
+       ${sel('Stage',['All','KG Stage','Lower Primary','Upper Primary'])}${sel('Department',['All','Administartion'])}
+       ${sel('Status',['Active','All','Incomplete Data'])}${sel('Category',['All','Non Teaching'])}
+       ${sel('Hire Type',['All'])}${sel('Job Title',['All','Administrative'])}
+       ${dt('From Hire Date')}${dt('To Hire Date')}
+       ${sel('Document Status',['All','TBD / Requires Confirmation'])}${sel('Document Name',['All','TBD / Requires Confirmation'])}
+     </div>
+     <div class="or-sep">OR</div>
+     <div class="crit-radios">${['Code','ID','Work Place','Mobile'].map(c=>`<label><input type="radio" name="r2"> ${c}</label>`).join('')}</div>
+     <div class="or-sep">OR</div>
+     <div class="grid-form c3"><div class="f"><label>Age From</label><input type="number"></div><div class="f"><label>Age To</label><input type="number"></div></div>
+   </div></div>
+   <div class="card"><div class="card-h"><h3>Output fields</h3><div class="right">
+     <button class="linkbtn" onclick="setFields(true)">Select All</button><span style="color:var(--line-2)">|</span>
+     <button class="linkbtn" onclick="setFields(false)">De-Select All</button><span style="color:var(--line-2)">|</span>
+     <button class="linkbtn" onclick="setFields('inv')">Invert-Selection</button></div></div>
+   <div class="card-b">
+     <div class="section-label">Employee General Info</div>
+     <div class="chk-list">${F.map(([n,l])=>`<label><span class="ser">${n}</span><input type="checkbox" ${S.rptFields[n]?'checked':''} onchange="S.rptFields[${n}]=this.checked;render()"> ${l}</label>`).join('')}</div>
+     <div class="callout" style="margin-top:16px">Further field groups may exist below this one in the source system — the capture was cut off (OQ-52). None have been invented.</div>
+     <div class="grid-form c2" style="margin-top:8px">
+       <div class="f"><label>Header Required</label><div class="radio-row"><label><input type="radio" name="hr" checked> Yes</label><label><input type="radio" name="hr"> No</label></div></div>
+       <div class="f"><label>School Required</label><div class="radio-row"><label><input type="radio" name="sr"> Yes</label><label><input type="radio" name="sr" checked> No</label></div></div>
+     </div>
+     <div style="margin-top:18px"><button class="btn btn-accent" onclick="toast('The execute/export control was outside the captured area — OQ-50')">Show / Export</button>
+       <span style="margin-left:10px;color:var(--text-3);font-size:12.5px">Control name and behaviour unconfirmed.</span></div>
+   </div></div>`;
+}
+function setFields(m){for(const k in S.rptFields)S.rptFields[k]=m==='inv'?!S.rptFields[k]:m;render();}
+
+/* ---- PG-VAC-02 / 03 ---- */
+function vacUsed(){return 0;} // CONFLICT-06: balance did not move after saving leave
+function daysBetween(a,b){
+  if(!a||!b)return 0;
+  const d1=new Date(a),d2=new Date(b);
+  if(isNaN(d1)||isNaN(d2))return 0;
+  return Math.max(0,Math.round((d2-d1)/86400000)+1); // inclusive calendar days — BR-VAC-005
+}
+function pgVacRecord(){
+  const f=S.vacForm, nod=daysBetween(f.from,f.to);
+  return pageHead('Employee Vacation',esc(S.emp.en)+' · vacation ledger','PG-VAC-02',
+    `<button class="btn btn-sm btn-warn" onclick="go('vac-list')">List</button>`)
+  +`<div class="card"><div class="card-h"><h3>Employee Information</h3></div><div class="card-b">${empCard(true)}</div></div>
+   <div class="card"><div class="card-b">
+     <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+       <div class="f" style="max-width:200px"><label>Academic Year</label>
+         <select onchange="toast('Whether the year scopes the balance figures too is unconfirmed — OQ-64')"><option>2025-2026</option><option>TBD</option></select></div>
+       <div style="margin-left:auto">
+         <button class="btn ${S.showVac?'btn-warn':'btn-primary'}" onclick="S.showVac=!S.showVac;render()">${S.showVac?'Hide':'+ Add New Vacation'}</button></div>
+     </div>
+     ${S.showVac?`<div class="card" style="margin:16px 0 0;background:var(--surface-2)"><div class="card-b">
+       <div class="section-label">Add New Vacation</div>
+       <div class="grid-form">
+         <div class="f"><label>Main Vacation Balance <span class="ro-tag">editable? — OQ-67</span></label><input value="14"></div>
+         <div class="f"><label>Vacation Type:</label>
+           <select onchange="S.vacForm.type=this.value">
+             <option value="">— select —</option>
+             ${VAC_TYPES.map(([en,ar])=>`<option value="${esc(en)}; ${esc(ar)}" ${f.type===en+'; '+ar?'selected':''}>${esc(en)} — ${esc(ar)}</option>`).join('')}
+           </select><span class="hint">7 values, stored bilingually (Name En / Name Ar)</span></div>
+         <div class="f"><label>Date From :</label><input type="date" value="${esc(f.from)}" onchange="S.vacForm.from=this.value;render()"></div>
+         <div class="f"><label>Date To :</label><input type="date" value="${esc(f.to)}" onchange="S.vacForm.to=this.value;render()"></div>
+       </div>
+       <div style="display:flex;align-items:center;gap:16px;margin-top:14px">
+         <div class="pill mute" style="font-size:13px;padding:6px 12px">No Of Days : <b>${nod}</b></div>
+         <span style="font-size:12px;color:var(--text-3)">Inclusive calendar days — weekends and holidays are <b>not</b> excluded (BR-VAC-005)</span>
+         <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="saveVac()">SAVE</button>
+       </div>
+     </div></div>`:''}
+   </div></div>
+   <div class="card"><div class="card-b tight">
+     <div class="tablewrap"><table class="grid"><thead>
+       <tr><th>#</th><th>s</th><th>Vacation Type</th><th>Date From</th><th>Date To</th><th>No Of Days</th><th>Added By</th><th>Date</th><th>Time</th></tr>
+       <tr class="filters"><td></td><td></td><td><select><option></option></select></td><td><select><option></option></select></td><td><select><option></option></select></td><td></td><td><input></td><td><input></td><td><input></td></tr></thead>
+       <tbody>${S.vac.length?S.vac.map((r,i)=>`<tr><td>${i+1}</td><td></td><td>${esc(r.type)}</td><td>${r.from}</td><td>${r.to}</td>
+         <td>${r.days}</td><td>${r.by}</td><td>${r.ts}</td><td>${r.ts}</td></tr>`).join('')
+        :'<tr><td colspan="9" class="empty">No data to display</td></tr>'}</tbody></table></div>
+     <div style="padding:12px 16px;border-top:1px solid var(--line);color:var(--text-3);font-size:12.5px">
+       No edit or delete control exists for a saved vacation record (OQ-66). The Date and Time columns show the same value (INC-30).</div>
+   </div></div>
+   ${S.vac.length?`<div class="callout"><b>CONFLICT-06 reproduced.</b> ${S.vac.length} vacation record(s) totalling ${S.vac.reduce((a,r)=>a+r.days,0)} days are recorded, yet <b>Emp. Vacation</b> still reads 0 and <b>Balance Remaining</b> still reads 14 — exactly as observed in the source system after a 17-day Unpaid Leave. By design, a stale display, or a defect: unresolved.</div>`:''}`;
+}
+function saveVac(){
+  const f=S.vacForm, d=daysBetween(f.from,f.to);
+  if(!f.type||!f.from||!f.to){toast('Vacation Type, Date From and Date To are assumed mandatory (VR-VAC-004/005)');return;}
+  const now=new Date();
+  S.vac.push({type:f.type,from:fmt(f.from),to:fmt(f.to),days:d,by:'EduHub',ts:fmt(now.toISOString().slice(0,10))+' '+now.toLocaleTimeString()});
+  S.vacForm={type:'',from:'',to:''};
+  toast('Vacation saved — no confirmation message exists in the source system (OQ-69)');
+  render();
+}
+function fmt(iso){if(!iso)return '';const [y,m,d]=iso.split('-');return `${+m}/${+d}/${y}`;}
+
+/* ============================================================
+   PROPOSED HR MODULES — Payroll · Financials · Attendance · Talent
+   None of these exist in the supplied screenshots. They are new
+   scenarios requested by the business. Every screen is marked
+   "Proposed" so it can never be mistaken for documented as-is
+   behaviour. Sample figures are illustrative (currency: EGP).
+   ============================================================ */
+const MOD={};
+function M(key,code,name,area,scen,purpose,cfg){MOD[key]=Object.assign({key,code,name,area,scen,purpose},cfg);}
+const CRIT_STD=['Work Place','Department','Job Title','Emp Category','Status'];
+
+/* ---------- PAYROLL ---------- */
+M('pay-01','PG-PAY-01','Salary Structure','payroll','STF-PAY-01',
+ 'Define each employee’s salary components — earnings and deductions — with effective dates.',{
+ crit:CRIT_STD.concat(['Code / Name','Effective Date']),
+ cols:[['Ser','Number'],['Details','Action'],['Emp Code','Number'],['Employee Name','Text'],
+   ['Department','Text'],['Job Title','Text'],['Basic Salary','Currency'],['Total Allowances','Currency'],
+   ['Total Deductions','Currency'],['Gross Salary','Currency'],['Net Salary','Currency'],
+   ['Effective From','Date'],['Status','Status']],
+ rows:[[1,'▤',30912,'Kareem Samir Hassan Ali','Administartion','Administrative','8,500','3,200','1,430','11,700','10,270','01/09/2025','Active'],
+   [2,'▤',19906,'Tarek Nabil Fouad Saad','Administartion','Administrative','7,200','2,600','1,180','9,800','8,620','01/09/2025','Active'],
+   [3,'▤',30358,'Hala Wael Sabry Kamal','Disipline','Disipline','6,400','2,100','980','8,500','7,520','01/09/2025','Active'],
+   [4,'▤',14538,'Mervat Adel Zaki Omar','Bus Matron','Bus Matron','4,900','1,500','640','6,400','5,760','01/09/2025','Active']],
+ actions:'New Structure · Edit · Copy from previous · Bulk import · Export · View history',
+ detail:{card:[['Employee Name','Kareem Samir Hassan Ali'],['Emp Code','30912'],
+   ['Department','Administartion'],['Job Title','Administrative'],
+   ['Basic Salary','EGP 8,500'],['Gross Salary','EGP 11,700'],
+   ['Total Deductions','EGP 1,430'],['Net Salary','EGP 10,270'],
+   ['Effective From','01 September 2025'],['Status','Active']],
+   grids:[['Salary Components',
+     ['Component','Type','Calculation','Value','Taxable','Insurable','Effective From','Effective To'],
+     [['Basic Salary','Earning','Fixed','8,500','Yes','Yes','01/09/2025','—'],
+      ['Housing Allowance','Earning','% of Basic','20% = 1,700','Yes','No','01/09/2025','—'],
+      ['Transport Allowance','Earning','Fixed','900','No','No','01/09/2025','—'],
+      ['Mobile Allowance','Earning','Fixed','300','No','No','01/09/2025','—'],
+      ['Meal Allowance','Earning','Fixed','300','No','No','01/09/2025','—'],
+      ['Social Insurance','Deduction','% of Insurable','11% = 1,122','—','—','01/09/2025','—'],
+      ['Income Tax','Deduction','Tax bracket','308','—','—','01/09/2025','—']]]]},
+ form:{title:'Add / Edit Salary Component',fields:[
+   ['Employee','Lookup','Yes','Locked when opened from the employee record'],
+   ['Component Name','Dropdown','Yes','Earning and deduction component master'],
+   ['Component Type','Radio','Yes','Earning / Deduction'],
+   ['Calculation Method','Dropdown','Yes','Fixed Amount · % of Basic · % of Gross · Formula'],
+   ['Value','Number','Yes','Amount or percentage, per the method'],
+   ['Taxable','Checkbox','No','Included in the income-tax base'],
+   ['Insurable','Checkbox','No','Included in the social-insurance base'],
+   ['Effective From','Date','Yes','—'],['Effective To','Date','No','Blank = open-ended'],
+   ['Comment','Text','No','—']]}});
+
+M('pay-02','PG-PAY-02','Payroll Run','payroll','STF-PAY-02',
+ 'Calculate, review, approve and post the monthly payroll for a population.',{
+ crit:['Payroll Month/Year','Work Place','Emp Category','Run Status'],
+ cols:[['Run No','Number'],['Details','Action'],['Payroll Month/Year','Text'],['Work Place','Text'],
+   ['Employees','Number'],['Total Gross','Currency'],['Total Deductions','Currency'],['Total Net','Currency'],
+   ['Status','Status'],['Created By','Text'],['Created On','Date & Time']],
+ rows:[['PR-2026-03','▤','Mar 2026','Main Campus','32','374,400','45,760','328,640','Draft','EduHub','15/03/2026 01:10'],
+   ['PR-2026-02','▤','Feb 2026','Main Campus','32','372,100','45,400','326,700','Posted','hr.officer','01/03/2026 09:22'],
+   ['PR-2026-01','▤','Jan 2026','Main Campus','31','361,800','44,120','317,680','Posted','hr.officer','01/02/2026 09:05']],
+ actions:'New Run · Calculate · Recalculate · Approve · Post · Export Bank File · Rollback · Print Register',
+ lifecycle:{states:['Draft','Calculated','Approved','Posted'],actions:[
+   {l:'Calculate',from:['Draft'],to:'Calculated',style:'primary',t:'Run lines calculated for 32 employees'},
+   {l:'Recalculate',from:['Calculated'],to:'Calculated',t:'Run recalculated — 32 lines refreshed'},
+   {l:'Approve',from:['Calculated'],to:'Approved',style:'primary',t:'Run approved by EduHub'},
+   {l:'Post',from:['Approved'],to:'Posted',style:'warn',
+    confirm:'Posting locks this run permanently. Payslips will be generated for all 32 employees and the period will be closed. Continue?',
+    t:'Run posted — payslips generated'},
+   {l:'Export Bank File',from:['Posted'],act:'bank',style:'accent'},
+   {l:'Print Register',from:['Calculated','Approved','Posted'],act:'register'},
+   {l:'Rollback',from:['Calculated','Approved','Posted'],to:'prev',style:'ghost',
+    confirm:'Roll this run back one step? Any downstream output already issued must be reissued.'}
+ ]},
+ detail:{card:[['Run No','PR-2026-03'],['Payroll Month/Year','Mar 2026'],['Work Place','Main Campus'],
+   ['Employees','32'],['Total Gross','EGP 374,400'],['Total Deductions','EGP 45,760'],
+   ['Total Net','EGP 328,640'],['Status','Draft'],['Payment Date','28 March 2026'],['Created By','EduHub']],
+   grids:[['Run Lines',
+     ['Emp Code','Employee Name','Basic','Allowances','Overtime','Gross','Insurance','Tax','Loans','Penalties','Net','Status'],
+     [['30912','Kareem Samir Hassan Ali','8,500','3,200','0','11,700','1,122','308','0','0','10,270','Calculated'],
+      ['19906','Tarek Nabil Fouad Saad','7,200','2,600','450','10,250','950','230','500','0','8,570','Calculated'],
+      ['30358','Hala Wael Sabry Kamal','6,400','2,100','0','8,500','820','160','0','120','7,400','Calculated'],
+      ['14538','Mervat Adel Zaki Omar','4,900','1,500','300','6,700','560','80','0','0','6,060','Calculated']]],
+    ['Validation — blocking issues',['#','Employee','Issue','Severity'],
+     [['1','—','No employees are missing a salary structure','Info'],
+      ['2','—','No employees are missing bank details','Info']]]]},
+ form:{title:'New Payroll Run',fields:[
+   ['Payroll Month/Year','Dropdown','Yes','Open period only'],
+   ['Work Place','Dropdown','Yes','One or all'],
+   ['Emp Category','Dropdown','No','Teaching / Non Teaching / All'],
+   ['Department','Dropdown','No','—'],
+   ['Payment Date','Date','Yes','Drives the bank transfer file'],
+   ['Include New Hires','Checkbox','No','Pro-rated from Hire Date'],
+   ['Include Withdrawn','Checkbox','No','Pro-rated to Last Working Date'],
+   ['Include Overtime','Checkbox','No','Pulls approved overtime for the period'],
+   ['Include Attendance Deductions','Checkbox','No','Pulls the attendance summary for the period'],
+   ['Notes','Textarea','No','—']]}});
+
+M('pay-03','PG-PAY-03','Payslip','payroll','STF-PAY-03',
+ 'View, print and send an individual payslip for a payroll period.',{
+ crit:['Payroll Month/Year','Work Place','Department','Code / Name'],
+ cols:[['Ser','Number'],['Details','Action'],['Emp Code','Number'],['Employee Name','Text'],
+   ['Payroll Month/Year','Text'],['Gross','Currency'],['Deductions','Currency'],['Net','Currency'],
+   ['Payment Date','Date'],['Payment Method','Text'],['Status','Status']],
+ rows:[[1,'▤',30912,'Kareem Samir Hassan Ali','Mar 2026','11,700','1,430','10,270','28/03/2026','Bank Transfer','Draft'],
+   [2,'▤',19906,'Tarek Nabil Fouad Saad','Mar 2026','10,250','1,680','8,570','28/03/2026','Bank Transfer','Draft'],
+   [3,'▤',30358,'Hala Wael Sabry Kamal','Mar 2026','8,500','1,100','7,400','28/03/2026','Bank Transfer','Draft']],
+ actions:'Print · Download PDF · Email to employee · Bulk print · Export',
+ detail:{card:[['Employee Name','Kareem Samir Hassan Ali'],['Emp Code','30912'],
+   ['Payroll Month/Year','Mar 2026'],['Work Place','Main Campus'],['Job Title','Administrative'],
+   ['Payment Date','28 March 2026'],['Payment Method','Bank Transfer'],['Bank Account','**** 4419'],
+   ['Net Pay','EGP 10,270'],['Status','Draft']],
+   grids:[['Earnings',['Component','Amount'],
+     [['Basic Salary','8,500'],['Housing Allowance','1,700'],['Transport Allowance','900'],
+      ['Mobile Allowance','300'],['Meal Allowance','300'],['Overtime','0'],['Total Earnings','11,700']]],
+    ['Deductions',['Component','Amount'],
+     [['Social Insurance','1,122'],['Income Tax','308'],['Loan Installment','0'],
+      ['Penalties','0'],['Attendance Deduction','0'],['Total Deductions','1,430']]],
+    ['Year to Date',['Item','Amount'],
+     [['Gross YTD','82,150'],['Deductions YTD','10,010'],['Net YTD','72,140'],['Tax YTD','2,156']]]]}});
+
+M('pay-04','PG-PAY-04','Salary Increase / Increments','payroll','STF-PAY-04',
+ 'Raise salaries individually or in batch, with an effective date and an approval step.',{
+ crit:['Increase Type','Effective Year','Work Place','Status'],
+ cols:[['Batch No','Text'],['Details','Action'],['Title','Text'],['Increase Type','Text'],
+   ['Effective Date','Date'],['Employees','Number'],['Total Monthly Impact','Currency'],
+   ['Status','Status'],['Created By','Text']],
+ rows:[['INC-2026-02','▤','Annual increment 2026','Annual','01/07/2026','32','28,400','Pending Approval','EduHub'],
+   ['INC-2026-01','▤','Promotion — Administration','Promotion','01/02/2026','3','4,200','Applied','hr.officer'],
+   ['INC-2025-03','▤','Cost of living adjustment','Cost of Living','01/10/2025','31','21,700','Applied','hr.officer']],
+ actions:'New Batch · Add Employees · Recalculate · Submit for Approval · Approve · Reject · Apply · Export',
+ lifecycle:{states:['Draft','Pending Approval','Approved','Applied'],actions:[
+   {l:'Recalculate',from:['Draft'],to:'Draft',t:'Batch lines recalculated'},
+   {l:'Submit for Approval',from:['Draft'],to:'Pending Approval',style:'primary',t:'Sent for approval'},
+   {l:'Approve',from:['Pending Approval'],to:'Approved',style:'primary',t:'Batch approved'},
+   {l:'Reject',from:['Pending Approval'],to:'Draft',style:'ghost',t:'Batch rejected — returned to draft'},
+   {l:'Apply',from:['Approved'],to:'Applied',style:'warn',
+    confirm:'Applying writes a new effective-dated Basic Salary for 32 employees from 01/07/2026. Continue?',
+    t:'Applied — new basic salaries effective 01/07/2026'},
+   {l:'Export',from:['Draft','Pending Approval','Approved','Applied'],act:'toast'}
+ ]},
+ detail:{card:[['Batch No','INC-2026-02'],['Title','Annual increment 2026'],['Increase Type','Annual'],
+   ['Effective Date','01 July 2026'],['Increase Method','Percentage of Basic'],['Value','10 %'],
+   ['Employees','32'],['Total Monthly Impact','EGP 28,400'],['Status','Pending Approval'],['Created By','EduHub']],
+   grids:[['Batch Lines',
+     ['Emp Code','Employee Name','Job Title','Current Basic','Increase','New Basic','Difference','%','Approved'],
+     [['30912','Kareem Samir Hassan Ali','Administrative','8,500','850','9,350','+850','10 %','☐'],
+      ['19906','Tarek Nabil Fouad Saad','Administrative','7,200','720','7,920','+720','10 %','☐'],
+      ['30358','Hala Wael Sabry Kamal','Disipline','6,400','640','7,040','+640','10 %','☐'],
+      ['14538','Mervat Adel Zaki Omar','Bus Matron','4,900','490','5,390','+490','10 %','☐']]],
+    ['Approval History',['Action','User','Date','Comment'],
+     [['Created','EduHub','15/03/2026 01:20','—'],['Submitted for approval','EduHub','15/03/2026 01:25','Annual cycle']]]]},
+ form:{title:'New Increase Batch',fields:[
+   ['Batch Title','Text','Yes','—'],
+   ['Increase Type','Dropdown','Yes','Annual · Promotion · Merit · Cost of Living · Individual'],
+   ['Effective Date','Date','Yes','Drives the first payroll run affected'],
+   ['Apply To — Work Place','Dropdown','No','Population selection'],
+   ['Apply To — Department','Dropdown','No','—'],
+   ['Apply To — Job Title','Dropdown','No','—'],
+   ['Apply To — Emp Category','Dropdown','No','—'],
+   ['Minimum Service (months)','Number','No','Excludes recent hires'],
+   ['Exclude employees on Unpaid Leave','Checkbox','No','—'],
+   ['Increase Method','Dropdown','Yes','Fixed Amount · Percentage of Basic · New Basic'],
+   ['Value','Number','Yes','Amount or percentage'],
+   ['Round To','Dropdown','No','1 · 5 · 10 · 50'],
+   ['Reason','Textarea','No','—'],['Attachment','File','No','Approval memo']]}});
+
+M('pay-05','PG-PAY-05','Payroll Reports','payroll','STF-PAY-05',
+ 'Reporting over payroll runs, components, increments and statutory deductions.',{
+ reportList:['Payroll Register (by run)','Bank Transfer File','Salary Comparison (month vs month)',
+   'Income Tax Report','Social Insurance Report','Loans Outstanding','Increments History',
+   'Payroll Cost by Department','Payroll Cost by Work Place','End of Service Provision','Salary Structure Audit']});
+
+/* ---------- EMPLOYEE FINANCIALS ---------- */
+M('fin-01','PG-FIN-01','Loans & Advances','financials','STF-FIN-01',
+ 'Record employee loans and salary advances, and recover them through payroll instalments.',{
+ crit:CRIT_STD.concat(['Loan Type','Code / Name','Loan Status']),
+ cols:[['Ser','Number'],['Details','Action'],['Emp Code','Number'],['Employee Name','Text'],
+   ['Loan Type','Text'],['Amount','Currency'],['Installments','Number'],['Installment Amount','Currency'],
+   ['Paid','Currency'],['Outstanding','Currency'],['Start Month','Text'],['End Month','Text'],['Status','Status']],
+ rows:[[1,'▤',19906,'Tarek Nabil Fouad Saad','Personal Loan','6,000','12','500','1,500','4,500','Jan 2026','Dec 2026','Active'],
+   [2,'▤',30358,'Hala Wael Sabry Kamal','Salary Advance','2,000','2','1,000','2,000','0','Nov 2025','Dec 2025','Closed'],
+   [3,'▤',14538,'Mervat Adel Zaki Omar','Emergency Loan','3,000','6','500','0','3,000','Apr 2026','Sep 2026','Pending Approval']],
+ actions:'New Loan · Approve · Reject · Reschedule · Early Settlement · Suspend Deduction · Export',
+ detail:{card:[['Employee Name','Tarek Nabil Fouad Saad'],['Emp Code','19906'],['Loan Type','Personal Loan'],
+   ['Amount','EGP 6,000'],['Installments','12'],['Installment Amount','EGP 500'],
+   ['Paid','EGP 1,500'],['Outstanding','EGP 4,500'],['Status','Active'],['Approved By','hr.officer']],
+   grids:[['Instalment Schedule',['#','Due Month','Amount','Deducted In Run','Status','Remaining'],
+     [['1','Jan 2026','500','PR-2026-01','Deducted','5,500'],
+      ['2','Feb 2026','500','PR-2026-02','Deducted','5,000'],
+      ['3','Mar 2026','500','PR-2026-03','Pending','4,500'],
+      ['4','Apr 2026','500','—','Scheduled','4,000']]]]},
+ form:{title:'New Loan / Advance',fields:[
+   ['Employee','Lookup','Yes','—'],
+   ['Loan Type','Dropdown','Yes','Personal Loan · Salary Advance · Emergency Loan · Housing Loan'],
+   ['Amount','Currency','Yes','—'],
+   ['Number of Installments','Number','Yes','—'],
+   ['Installment Amount','Currency','Auto','Amount ÷ installments'],
+   ['Start Month','Dropdown','Yes','First payroll period to deduct from'],
+   ['Guarantor','Lookup','No','Another employee'],
+   ['Reason','Textarea','No','—'],['Attachment','File','No','Signed request']]}});
+
+M('fin-02','PG-FIN-02','Deductions & Penalties','financials','STF-FIN-02',
+ 'Record disciplinary penalties and ad-hoc deductions to be applied in payroll.',{
+ crit:CRIT_STD.concat(['Penalty Type','Payroll Month/Year','Code / Name']),
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Penalty Type','Text'],
+   ['Incident Date','Date'],['Reason','Text'],['Value Type','Text'],['Value','Number'],
+   ['Deducted Amount','Currency'],['Payroll Month','Text'],['Approved By','Text'],['Status','Status']],
+ rows:[[1,30358,'Hala Wael Sabry Kamal','Warning with deduction','04/03/2026','Repeated late arrival','Days','0.5','120','Mar 2026','hr.officer','Approved'],
+   [2,14538,'Mervat Adel Zaki Omar','Absence without permission','11/02/2026','Unexcused absence','Days','1','230','Feb 2026','hr.officer','Applied']],
+ actions:'New Penalty · Approve · Reject · Cancel · Send to Payroll · Export',
+ form:{title:'New Deduction / Penalty',fields:[
+   ['Employee','Lookup','Yes','—'],
+   ['Penalty Type','Dropdown','Yes','Verbal Warning · Written Warning · Warning with deduction · Absence · Other deduction'],
+   ['Incident Date','Date','Yes','—'],
+   ['Reason','Textarea','Yes','—'],
+   ['Value Type','Radio','Yes','Days · Fixed Amount · % of Basic'],
+   ['Value','Number','Yes','—'],
+   ['Deducted Amount','Currency','Auto','Calculated from value type and daily rate'],
+   ['Payroll Month/Year','Dropdown','Yes','Period in which the deduction applies'],
+   ['Attachment','File','No','Investigation report'],['Comment','Textarea','No','—']]}});
+
+M('fin-03','PG-FIN-03','Overtime','financials','STF-FIN-03',
+ 'Capture and approve overtime hours, priced by rate and paid through payroll.',{
+ crit:CRIT_STD.concat(['Overtime Type','Date From','Date To','Code / Name']),
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Date','Date'],
+   ['Overtime Type','Text'],['From Time','Time'],['To Time','Time'],['Hours','Number'],
+   ['Rate','Number'],['Amount','Currency'],['Payroll Month','Text'],['Approved By','Text'],['Status','Status']],
+ rows:[[1,19906,'Tarek Nabil Fouad Saad','07/03/2026','Normal','16:00','19:00','3.0','1.35','182','Mar 2026','hr.officer','Approved'],
+   [2,19906,'Tarek Nabil Fouad Saad','13/03/2026','Weekend','09:00','14:00','5.0','1.70','268','Mar 2026','hr.officer','Approved'],
+   [3,14538,'Mervat Adel Zaki Omar','12/03/2026','Normal','15:00','18:00','3.0','1.35','120','Mar 2026','—','Pending']],
+ actions:'New Overtime · Bulk entry from attendance · Approve · Reject · Send to Payroll · Export',
+ form:{title:'New Overtime Entry',fields:[
+   ['Employee','Lookup','Yes','—'],['Date','Date','Yes','—'],
+   ['Overtime Type','Dropdown','Yes','Normal · Weekend · Public Holiday'],
+   ['From Time','Time','Yes','—'],['To Time','Time','Yes','—'],
+   ['Hours','Number','Auto','Calculated from the time range'],
+   ['Rate','Number','Auto','Multiplier from the overtime type'],
+   ['Amount','Currency','Auto','Hours × hourly rate × multiplier'],
+   ['Reason','Textarea','Yes','—'],['Attachment','File','No','—']]}});
+
+M('fin-04','PG-FIN-04','End of Service Settlement','financials','STF-FIN-04',
+ 'Calculate and settle final dues when an employee is terminated or resigns.',{
+ crit:['Work Place','Department','Termination Reason','Last Working Date From','Last Working Date To','Settlement Status'],
+ cols:[['Ser','Number'],['Details','Action'],['Emp Code','Number'],['Employee Name','Text'],
+   ['Last Working Date','Date'],['Service Years','Number'],['Termination Reason','Text'],
+   ['Gratuity','Currency'],['Unused Vacation','Currency'],['Outstanding Loans','Currency'],
+   ['Other Deductions','Currency'],['Net Settlement','Currency'],['Status','Status']],
+ rows:[[1,'▤',25801,'Rania Hosni Farid Nagi','31/03/2026','4.6','Resignation','29,400','3,200','0','450','32,150','Pending Approval']],
+ actions:'Calculate · Recalculate · Approve · Reject · Pay · Print Settlement · Export',
+ lifecycle:{states:['Draft','Pending Approval','Approved','Paid'],actions:[
+   {l:'Calculate',from:['Draft'],to:'Pending Approval',style:'primary',t:'Settlement calculated — EGP 32,150'},
+   {l:'Approve',from:['Pending Approval'],to:'Approved',style:'primary',t:'Settlement approved'},
+   {l:'Reject',from:['Pending Approval'],to:'Draft',style:'ghost',t:'Returned to draft'},
+   {l:'Pay',from:['Approved'],to:'Paid',style:'warn',
+    confirm:'Marking the settlement as paid closes the employee record financially. Continue?',
+    t:'Settlement paid'},
+   {l:'Print Settlement',from:['Pending Approval','Approved','Paid'],act:'toast'}
+ ]},
+ detail:{card:[['Employee Name','Rania Hosni Farid Nagi'],['Emp Code','25801'],
+   ['Hire Date','01 September 2021'],['Last Working Date','31 March 2026'],
+   ['Service Years','4.6'],['Termination Reason','Resignation'],
+   ['Total Entitlements','EGP 32,600'],['Total Deductions','EGP 450'],
+   ['Net Settlement','EGP 32,150'],['Status','Pending Approval']],
+   grids:[['Entitlements',['Item','Basis','Amount'],
+     [['End of service gratuity','4.6 years × 1 month basic','29,400'],
+      ['Unused vacation encashment','9 days × daily rate','3,200'],
+      ['Final month salary','Pro-rated to 31/03/2026','—'],
+      ['Total entitlements','','32,600']]],
+    ['Deductions',['Item','Basis','Amount'],
+     [['Outstanding loans','No open loans','0'],
+      ['Unreturned documents / assets','1 item','450'],
+      ['Notice period shortfall','Notice served in full','0'],
+      ['Total deductions','','450']]]]}});
+
+/* ---------- ATTENDANCE ---------- */
+M('att-01','PG-ATT-01','Daily Attendance','attendance','STF-ATT-01',
+ 'Record and review daily in/out times, lateness, absence and overtime per employee.',{
+ crit:['Date From','Date To','Work Place','Department','Stage','Emp Category','Attendance Status','Code / Name'],
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Date','Date'],['Shift','Text'],
+   ['Time In','Time'],['Time Out','Time'],['Worked Hours','Number'],['Late (min)','Number'],
+   ['Early Leave (min)','Number'],['Overtime Hours','Number'],['Status','Status'],['Source','Text']],
+ rows:[[1,30912,'Kareem Samir Hassan Ali','15/03/2026','Morning (08:00–16:00)','07:54','16:05','8.2','0','0','0','Present','Device'],
+   [2,19906,'Tarek Nabil Fouad Saad','15/03/2026','Morning (08:00–16:00)','08:19','16:02','7.7','19','0','0','Late','Device'],
+   [3,30358,'Hala Wael Sabry Kamal','15/03/2026','Morning (08:00–16:00)','—','—','0','0','0','0','Absent','—'],
+   [4,14538,'Mervat Adel Zaki Omar','15/03/2026','Split (07:00–17:00)','06:58','14:30','7.5','0','150','0','Early Leave','Manual']],
+ actions:'Import from device · Manual entry · Edit · Approve · Recalculate · Send to Payroll · Export',
+ form:{title:'Manual Attendance Entry',fields:[
+   ['Employee','Lookup','Yes','—'],['Date','Date','Yes','—'],
+   ['Shift','Dropdown','Auto','From the employee’s work schedule'],
+   ['Time In','Time','No','Blank = no punch in'],['Time Out','Time','No','Blank = no punch out'],
+   ['Attendance Status','Dropdown','Yes','Present · Absent · Late · Early Leave · On Vacation · On Permission · Holiday'],
+   ['Reason','Textarea','Yes','Mandatory for any manual override'],
+   ['Attachment','File','No','—']]}});
+
+M('att-02','PG-ATT-02','Shifts & Work Schedule','attendance','STF-ATT-02',
+ 'Define shifts, grace periods and weekends, and assign them to employees.',{
+ crit:['Work Place','Emp Category','Active'],
+ cols:[['Shift Code','Text'],['Details','Action'],['Shift Name','Text'],['From Time','Time'],['To Time','Time'],
+   ['Break (min)','Number'],['Working Hours','Number'],['Grace In (min)','Number'],['Grace Out (min)','Number'],
+   ['Weekend Days','Text'],['Assigned Employees','Number'],['Active','Status']],
+ rows:[['SH-01','▤','Morning','08:00','16:00','30','7.5','15','10','Fri, Sat','24','Active'],
+   ['SH-02','▤','Split (Bus staff)','07:00','17:00','120','8.0','10','10','Fri','6','Active'],
+   ['SH-03','▤','Administration late','10:00','18:00','30','7.5','15','10','Fri, Sat','2','Active']],
+ actions:'New Shift · Edit · Assign Employees · Deactivate · Copy · Export',
+ detail:{card:[['Shift Code','SH-01'],['Shift Name','Morning'],['From Time','08:00'],['To Time','16:00'],
+   ['Break','30 min'],['Working Hours','7.5'],['Grace In','15 min'],['Grace Out','10 min'],
+   ['Weekend Days','Friday, Saturday'],['Active','Yes']],
+   grids:[['Assigned Employees',['Emp Code','Employee Name','Department','Assigned From','Assigned To'],
+     [['30912','Kareem Samir Hassan Ali','Administartion','01/09/2025','—'],
+      ['19906','Tarek Nabil Fouad Saad','Administartion','01/09/2025','—'],
+      ['30358','Hala Wael Sabry Kamal','Disipline','01/09/2025','—']]]]},
+ form:{title:'New Shift',fields:[
+   ['Shift Code','Text','Yes','Unique'],['Shift Name','Text','Yes','—'],
+   ['From Time','Time','Yes','—'],['To Time','Time','Yes','—'],
+   ['Break (min)','Number','No','Deducted from working hours'],
+   ['Grace In (min)','Number','No','Lateness ignored inside this window'],
+   ['Grace Out (min)','Number','No','Early leave ignored inside this window'],
+   ['Weekend Days','Multi-select','Yes','—'],
+   ['Overtime counts after (min)','Number','No','—'],
+   ['Absence threshold (min)','Number','No','Late beyond this counts as absent'],
+   ['Active','Checkbox','No','Default ticked']]}});
+
+M('att-03','PG-ATT-03','Permissions','attendance','STF-ATT-03',
+ 'Record short absences during the working day — late arrival, early leave or personal permission.',{
+ crit:CRIT_STD.concat(['Permission Type','Date From','Date To','Code / Name']),
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Permission Type','Text'],
+   ['Date','Date'],['From Time','Time'],['To Time','Time'],['Duration (h)','Number'],
+   ['Reason','Text'],['Deduct from Balance','Text'],['Approved By','Text'],['Status','Status']],
+ rows:[[1,30912,'Kareem Samir Hassan Ali','Personal','10/03/2026','13:00','15:00','2.0','Family matter','No','hr.officer','Approved'],
+   [2,30358,'Hala Wael Sabry Kamal','Late Arrival','12/03/2026','08:00','09:30','1.5','Traffic','Yes','—','Pending']],
+ actions:'New Permission · Approve · Reject · Cancel · Export',
+ form:{title:'New Permission',fields:[
+   ['Employee','Lookup','Yes','—'],
+   ['Permission Type','Dropdown','Yes','Late Arrival · Early Leave · Personal · Official Assignment'],
+   ['Date','Date','Yes','—'],['From Time','Time','Yes','—'],['To Time','Time','Yes','—'],
+   ['Duration','Number','Auto','Calculated from the time range'],
+   ['Deduct from permission balance','Checkbox','No','Official assignment is never deducted'],
+   ['Reason','Textarea','Yes','—'],['Attachment','File','No','—']]}});
+
+M('att-04','PG-ATT-04','Attendance Summary','attendance','STF-ATT-04',
+ 'Monthly per-employee attendance totals, and the hand-off to payroll.',{
+ crit:['Payroll Month/Year','Work Place','Department','Emp Category','Code / Name'],
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Department','Text'],['Month','Text'],
+   ['Working Days','Number'],['Attended','Number'],['Absent','Number'],['Late Times','Number'],
+   ['Late Minutes','Number'],['Early Leave','Number'],['Overtime Hours','Number'],['Vacation Days','Number'],
+   ['Permission Hours','Number'],['Deduction Days','Number']],
+ rows:[[1,30912,'Kareem Samir Hassan Ali','Administartion','Mar 2026','22','22','0','0','0','0','0','0','2.0','0'],
+   [2,19906,'Tarek Nabil Fouad Saad','Administartion','Mar 2026','22','21','1','3','47','0','8.0','0','0','1.0'],
+   [3,30358,'Hala Wael Sabry Kamal','Disipline','Mar 2026','22','20','2','4','96','1','0','0','1.5','2.5']],
+ actions:'Generate · Recalculate · Approve · Send to Payroll · Export'});
+
+/* ---------- TALENT ---------- */
+M('rec-01','PG-REC-01','New Application','talent','STF-REC-01',
+ 'Capture job applications and move them through screening, interview, offer and hiring.',{
+ crit:['Job Title Applied','Work Place','Stage','Application Status','Application Date From','Application Date To','Applicant Name'],
+ cols:[['Ser','Number'],['Details','Action'],['Application No','Text'],['Applicant Name','Text'],
+   ['Civil ID','Text'],['Job Title Applied','Text'],['Work Place','Text'],['Stage','Text'],
+   ['Application Date','Date'],['Source','Text'],['Interview Result','Text'],['Status','Status']],
+ rows:[[1,'▤','APP-2026-118','Aya Mostafa Helmy Zaher','29001010100122','Teacher — English','Main Campus','Lower Primary','02/03/2026','Website','—','Screening'],
+   [2,'▤','APP-2026-117','Omar Sherif Talaat Amin','29001010100111','Administrative','Main Campus','—','28/02/2026','Referral','Recommended','Offer'],
+   [3,'▤','APP-2026-115','Laila Magdy Sobhy Nasr','29001010100133','Teacher — Science','Maadi Academy','Upper Primary','21/02/2026','Job Fair','Not suitable','Rejected']],
+ actions:'New Application · Screen · Schedule Interview · Record Result · Make Offer · Reject · Convert to Employee',
+ detail:{card:[['Application No','APP-2026-117'],['Applicant Name','Omar Sherif Talaat Amin'],
+   ['Civil ID','29001010100111'],['Job Title Applied','Administrative'],['Work Place','Main Campus'],
+   ['Application Date','28 February 2026'],['Source','Referral'],['Expected Salary','EGP 9,000'],
+   ['Interview Result','Recommended'],['Status','Offer']],
+   grids:[['Interviews',['Interview Date','Interviewer','Comments','Result'],
+     [['05/03/2026','hr.officer','Strong administrative background','Recommended'],
+      ['09/03/2026','hr.approver','Second round — approved','Recommended']]],
+    ['Documents',['Document Name','File','Received Date','Status'],
+     [['CV','📎','28/02/2026','Received'],['National ID copy','📎','05/03/2026','Received'],
+      ['Graduation certificate','—','—','Missing']]]]},
+ form:{title:'New Application',fields:[
+   ['Applicant Name (English)','Text','Yes','—'],['الاسم بالعربية','Text','Yes','—'],
+   ['Civil ID','Text','Yes','BirthDate derived, as in PG-EMP-02'],
+   ['BirthDate','Date','Auto','Derived from Civil ID'],
+   ['Gender','Radio','Yes','Male / Female'],['Mobile','Text','Yes','—'],['Email','Text','No','—'],
+   ['Job Title Applied','Dropdown','Yes','—'],['Work Place','Dropdown','Yes','—'],
+   ['Stage','Dropdown','No','Required for teaching roles'],
+   ['Education Level','Dropdown','No','—'],['Years of Experience','Number','No','—'],
+   ['Expected Salary','Currency','No','—'],
+   ['Source','Dropdown','No','Website · Referral · Job Fair · Agency · Walk-in'],
+   ['CV','File','Yes','.pdf .doc .docx'],['Notes','Textarea','No','—']]}});
+
+M('evl-01','PG-EVL-01','Employee Evaluation','talent','STF-EVL-01',
+ 'Score employees against weighted criteria for a period, and record the outcome.',{
+ crit:CRIT_STD.concat(['Evaluation Period','Evaluation Type','Evaluator','Code / Name']),
+ cols:[['Ser','Number'],['Details','Action'],['Emp Code','Number'],['Employee Name','Text'],
+   ['Department','Text'],['Job Title','Text'],['Evaluation Period','Text'],['Evaluation Type','Text'],
+   ['Evaluator','Text'],['Total Score','Number'],['Rating','Text'],['Status','Status']],
+ rows:[[1,'▤',30912,'Kareem Samir Hassan Ali','Administartion','Administrative','2025-2026 Mid-year','Periodic','hr.officer','86','Very Good','Completed'],
+   [2,'▤',19906,'Tarek Nabil Fouad Saad','Administartion','Administrative','2025-2026 Mid-year','Periodic','hr.officer','74','Good','Completed'],
+   [3,'▤',30358,'Hala Wael Sabry Kamal','Disipline','Disipline','2025-2026 Mid-year','Periodic','—','—','—','Draft']],
+ actions:'New Evaluation · Save · Submit · Acknowledge · Reopen · Print · Export',
+ detail:{card:[['Employee Name','Kareem Samir Hassan Ali'],['Emp Code','30912'],
+   ['Evaluation Period','2025-2026 Mid-year'],['Evaluation Type','Periodic'],['Evaluator','hr.officer'],
+   ['Total Score','86 / 100'],['Rating','Very Good'],['Recommendation','Annual increment'],
+   ['Employee Acknowledged','Yes'],['Status','Completed']],
+   grids:[['Evaluation Criteria',['Criterion','Weight %','Score (1–5)','Weighted','Comment'],
+     [['Job knowledge','20','4','16','Solid grasp of administrative procedures'],
+      ['Quality of work','20','5','20','Consistently accurate'],
+      ['Attendance & punctuality','15','5','15','No lateness recorded'],
+      ['Teamwork','15','4','12','Works well across departments'],
+      ['Initiative','15','4','12','—'],
+      ['Communication','15','3','11','—'],
+      ['Total','100','','86','Rating: Very Good']]],
+    ['Outcome',['Item','Value'],
+     [['Strengths','Reliability, accuracy, punctuality'],
+      ['Areas for development','Reporting and data analysis'],
+      ['Recommendation','Annual increment'],
+      ['Employee comment','Agreed'],['Acknowledged on','20/03/2026']]]]},
+ form:{title:'New Evaluation',fields:[
+   ['Employee','Lookup','Yes','—'],
+   ['Evaluation Period','Dropdown','Yes','Academic-year based'],
+   ['Evaluation Type','Dropdown','Yes','Probation · Periodic · Annual · Promotion'],
+   ['Evaluation Template','Dropdown','Yes','Determines the criteria and weights'],
+   ['Evaluator','Lookup','Yes','Defaults to the supervisor from Hire Details'],
+   ['Criteria scores','Grid','Yes','One score per criterion'],
+   ['Strengths','Textarea','No','—'],['Areas for development','Textarea','No','—'],
+   ['Recommendation','Dropdown','No','Increment · Promotion · Training · Warning · No action'],
+   ['Employee comment','Textarea','No','Filled by the employee'],
+   ['Acknowledgement','Checkbox','No','Employee has seen the evaluation']]}});
+
+M('trn-01','PG-TRN-01','Training','talent','STF-TRN-01',
+ 'Plan training courses, enrol employees, and record attendance and results.',{
+ crit:['Course Category','Provider','Date From','Date To','Work Place','Course Status'],
+ cols:[['Course Code','Text'],['Details','Action'],['Course Name','Text'],['Category','Text'],
+   ['Provider','Text'],['Trainer','Text'],['From Date','Date'],['To Date','Date'],['Hours','Number'],
+   ['Location','Text'],['Seats','Number'],['Enrolled','Number'],['Cost / Attendee','Currency'],['Status','Status']],
+ rows:[['TRN-026','▤','Classroom management','Pedagogical','Internal','hr.approver','06/04/2026','08/04/2026','12','Main Campus','25','18','0','Planned'],
+   ['TRN-025','▤','Excel for administrators','Technical','External','Future Skills','16/03/2026','17/03/2026','8','Main Campus','15','15','850','In Progress'],
+   ['TRN-024','▤','Fire safety & evacuation','Compliance','External','Civil Defence','02/02/2026','02/02/2026','4','Main Campus','40','36','200','Completed']],
+ actions:'New Course · Enrol Employees · Record Attendance · Record Result · Issue Certificate · Cancel · Export',
+ detail:{card:[['Course Code','TRN-025'],['Course Name','Excel for administrators'],['Category','Technical'],
+   ['Provider','Future Skills'],['Trainer','—'],['From / To','16–17 March 2026'],['Hours','8'],
+   ['Location','Main Campus'],['Seats / Enrolled','15 / 15'],['Total Cost','EGP 12,750']],
+   grids:[['Attendees',['Emp Code','Employee Name','Department','Attendance %','Result','Certificate','Cost'],
+     [['30912','Kareem Samir Hassan Ali','Administartion','100','Passed','Issued','850'],
+      ['19906','Tarek Nabil Fouad Saad','Administartion','88','Passed','Issued','850'],
+      ['30358','Hala Wael Sabry Kamal','Disipline','50','Not completed','—','850']]]]},
+ form:{title:'New Training Course',fields:[
+   ['Course Name','Text','Yes','—'],
+   ['Category','Dropdown','Yes','Pedagogical · Technical · Compliance · Leadership · Language'],
+   ['Provider','Dropdown','No','Internal / external provider master'],
+   ['Trainer','Text','No','—'],['From Date','Date','Yes','—'],['To Date','Date','Yes','—'],
+   ['Hours','Number','No','—'],['Location','Text','No','—'],['Seats','Number','No','—'],
+   ['Cost per Attendee','Currency','No','—'],
+   ['Target Audience','Multi-select','No','Department · Job Title · Emp Category'],
+   ['Description','Textarea','No','—'],['Attachment','File','No','Agenda / material']]}});
+
+M('ins-01','PG-INS-01','Insurance','talent','STF-INS-01',
+ 'Maintain social and medical insurance registration and contribution shares.',{
+ crit:CRIT_STD.concat(['Insurance Type','Insurance Office','Code / Name']),
+ cols:[['Ser','Number'],['Emp Code','Number'],['Employee Name','Text'],['Insurance Type','Text'],
+   ['Insurance Number','Text'],['Insurance Office','Text'],['Start Date','Date'],['End Date','Date'],
+   ['Insured Salary','Currency'],['Employee Share','Currency'],['Employer Share','Currency'],['Status','Status']],
+ rows:[[1,30912,'Kareem Samir Hassan Ali','Social','1234567890','Cairo — Al Sharabiya','01/09/2025','—','10,200','1,122','1,887','Active'],
+   [2,30912,'Kareem Samir Hassan Ali','Medical','MED-30912','Provider A','01/10/2025','30/09/2026','—','150','450','Active'],
+   [3,19906,'Tarek Nabil Fouad Saad','Social','—','—','—','—','—','—','—','Not registered']],
+ actions:'Register · Edit · Renew · Suspend · Terminate · Export Form 1 / Form 6 · Send to Payroll',
+ form:{title:'Insurance Registration',fields:[
+   ['Employee','Lookup','Yes','—'],
+   ['Insurance Type','Dropdown','Yes','Social · Medical'],
+   ['Insurance Number','Text','Yes','—'],
+   ['Insurance Office','Dropdown','Yes','—'],
+   ['Start Date','Date','Yes','—'],['End Date','Date','No','Medical policies renew annually'],
+   ['Insured Salary','Currency','Yes','Base for the contribution calculation'],
+   ['Employee Share %','Number','Yes','—'],['Employer Share %','Number','Yes','—'],
+   ['Dependants','Number','No','Medical only'],
+   ['Attachment','File','No','Insurance form']]}});
+
+/* ============================================================
+   PAYROLL REPORTS — PG-PAY-05-01 … 11
+   Each report has criteria, columns, sample rows and a totals row.
+   All proposed. Figures are illustrative and internally consistent
+   with the Payroll Run sample (4 of 32 employees shown).
+   ============================================================ */
+const PR={};
+function R(k,no,name,purpose,crit,cols,rows,total,note,extra){
+  PR[k]={key:k,no,name,code:'PG-PAY-05-'+String(no).padStart(2,'0'),purpose,crit,cols,rows,total,note,extra};}
+
+R('pr-01',1,'Payroll Register (by run)',
+ 'Full line-by-line register of a payroll run — the primary payroll control document.',
+ ['Payroll Month/Year','Work Place','Department','Emp Category','Run Status'],
+ [['Emp Code','n'],['Employee Name','t'],['Department','t'],['Basic','c'],['Allowances','c'],['Overtime','c'],
+  ['Gross','c'],['Insurance','c'],['Tax','c'],['Loans','c'],['Penalties','c'],['Total Deductions','c'],['Net','c']],
+ [['30912','Kareem Samir Hassan Ali','Administartion','8,500','3,200','0','11,700','1,122','308','0','0','1,430','10,270'],
+  ['19906','Tarek Nabil Fouad Saad','Administartion','7,200','2,600','450','10,250','950','230','500','0','1,680','8,570'],
+  ['30358','Hala Wael Sabry Kamal','Disipline','6,400','2,100','0','8,500','820','160','0','120','1,100','7,400'],
+  ['14538','Mervat Adel Zaki Omar','Bus Matron','4,900','1,500','300','6,700','560','80','0','0','640','6,060']],
+ ['Total — 32 employees','','','223,400','88,600','12,400','374,400','34,100','7,900','2,600','1,160','45,760','328,640'],
+ 'Reconciles to the Payroll Run header: Gross − Total Deductions = Net.');
+
+R('pr-02',2,'Bank Transfer File',
+ 'The payment instruction sent to the bank after a run is posted.',
+ ['Payroll Month/Year','Work Place','Bank','Payment Date'],
+ [['Seq','n'],['Emp Code','n'],['Employee Name','t'],['Bank','t'],['Account Number','t'],['Amount','c'],['Currency','t']],
+ [['001','30912','Kareem Samir Hassan Ali','CIB','1900-4419-2210','10,270.00','EGP'],
+  ['002','19906','Tarek Nabil Fouad Saad','CIB','1900-0372-1188','8,570.00','EGP'],
+  ['003','30358','Hala Wael Sabry Kamal','NBE','1900-0627-4471','7,400.00','EGP'],
+  ['004','14538','Mervat Adel Zaki Omar','NBE','1900-2102-9930','6,060.00','EGP']],
+ ['','Total — 32 records','','','','328,640.00','EGP'],
+ 'Only a POSTED run can produce this file. An employee without a bank account blocks the export.',
+ 'bank');
+
+R('pr-03',3,'Salary Comparison (month vs month)',
+ 'Compares two payroll periods per employee and explains the movement.',
+ ['Payroll Month/Year','Compare With','Work Place','Department','Variance Only'],
+ [['Emp Code','n'],['Employee Name','t'],['Prev Gross','c'],['Curr Gross','c'],['Diff','c'],['%','t'],
+  ['Prev Net','c'],['Curr Net','c'],['Reason','t']],
+ [['30912','Kareem Samir Hassan Ali','11,700','11,700','0','0 %','10,270','10,270','—'],
+  ['19906','Tarek Nabil Fouad Saad','9,800','10,250','+450','+4.6 %','8,620','8,570','Overtime 450 · loan instalment started'],
+  ['30358','Hala Wael Sabry Kamal','8,500','8,500','0','0 %','7,520','7,400','Penalty 120'],
+  ['14538','Mervat Adel Zaki Omar','6,400','6,700','+300','+4.7 %','5,760','6,060','Overtime 300']],
+ ['','Total','372,100','374,400','+2,300','+0.6 %','326,700','328,640',''],
+ 'The Reason column is derived from the difference between the two runs, not typed.');
+
+R('pr-04',4,'Income Tax Report',
+ 'Taxable base and tax deducted per employee, for the statutory return.',
+ ['Payroll Month/Year','Work Place','Department','Tax Bracket'],
+ [['Emp Code','n'],['Employee Name','t'],['Taxable Gross','c'],['Exemptions','c'],['Taxable Base','c'],
+  ['Bracket','t'],['Tax This Month','c'],['Tax YTD','c']],
+ [['30912','Kareem Samir Hassan Ali','10,200','1,750','8,450','Bracket 3','308','2,156'],
+  ['19906','Tarek Nabil Fouad Saad','9,800','1,750','8,050','Bracket 3','230','1,610'],
+  ['30358','Hala Wael Sabry Kamal','8,500','1,750','6,750','Bracket 2','160','1,120'],
+  ['14538','Mervat Adel Zaki Omar','6,400','1,750','4,650','Bracket 2','80','560']],
+ ['','Total — 32 employees','318,900','56,000','262,900','','7,900','55,300'],
+ 'Brackets, exemption amounts and the calculation are NOT defined — they must be confirmed before build.');
+
+R('pr-05',5,'Social Insurance Report',
+ 'Insured salary and the employee/employer contribution split, for the insurance office.',
+ ['Payroll Month/Year','Work Place','Insurance Office','Registration Status'],
+ [['Emp Code','n'],['Employee Name','t'],['Insurance No','t'],['Insurance Office','t'],['Insured Salary','c'],
+  ['Employee Share','c'],['Employer Share','c'],['Total','c']],
+ [['30912','Kareem Samir Hassan Ali','1234567890','Cairo — Al Sharabiya','10,200','1,122','1,887','3,009'],
+  ['19906','Tarek Nabil Fouad Saad','—','—','—','—','—','Not registered'],
+  ['30358','Hala Wael Sabry Kamal','1234567902','Cairo — Al Sharabiya','7,450','820','1,378','2,198'],
+  ['14538','Mervat Adel Zaki Omar','1234567915','Cairo — Al Sharabiya','5,090','560','942','1,502']],
+ ['','Total — 30 registered','','','309,800','34,100','57,313','91,413'],
+ 'Employees not registered are listed so the gap is visible. Percentages must be confirmed.');
+
+R('pr-06',6,'Loans Outstanding',
+ 'All open loans and advances with the balance still to be recovered.',
+ ['As At Month','Work Place','Department','Loan Type','Loan Status'],
+ [['Emp Code','n'],['Employee Name','t'],['Loan Type','t'],['Amount','c'],['Paid','c'],['Outstanding','c'],
+  ['Installment','c'],['Remaining Months','n'],['End Month','t']],
+ [['19906','Tarek Nabil Fouad Saad','Personal Loan','6,000','1,500','4,500','500','9','Dec 2026'],
+  ['14538','Mervat Adel Zaki Omar','Emergency Loan','3,000','0','3,000','500','6','Sep 2026'],
+  ['30358','Hala Wael Sabry Kamal','Salary Advance','2,000','2,000','0','—','0','Closed']],
+ ['','Total — 2 open loans','','11,000','3,500','7,500','1,000','',''],
+ 'The Outstanding column feeds the End of Service settlement when an employee leaves.');
+
+R('pr-07',7,'Increments History',
+ 'Every salary increase applied, with the before and after basic.',
+ ['Effective Date From','Effective Date To','Increase Type','Work Place','Department'],
+ [['Emp Code','n'],['Employee Name','t'],['Batch No','t'],['Type','t'],['Effective Date','t'],
+  ['Old Basic','c'],['Increase','c'],['New Basic','c'],['%','t'],['Approved By','t']],
+ [['30912','Kareem Samir Hassan Ali','INC-2025-03','Cost of Living','01/10/2025','7,800','700','8,500','+9.0 %','hr.officer'],
+  ['19906','Tarek Nabil Fouad Saad','INC-2025-03','Cost of Living','01/10/2025','6,600','600','7,200','+9.1 %','hr.officer'],
+  ['30358','Hala Wael Sabry Kamal','INC-2026-01','Promotion','01/02/2026','5,900','500','6,400','+8.5 %','hr.officer']],
+ ['','Total — 3 increments','','','','20,300','1,800','22,100','+8.9 %',''],
+ 'One row per employee per applied batch. Pending batches are excluded until Applied.');
+
+R('pr-08',8,'Payroll Cost by Department',
+ 'Total employment cost per department, including the employer contribution.',
+ ['Payroll Month/Year','Work Place','Emp Category'],
+ [['Department','t'],['Employees','n'],['Basic','c'],['Allowances','c'],['Overtime','c'],['Gross','c'],
+  ['Employer Insurance','c'],['Total Cost','c'],['% of Total','t']],
+ [['Administartion','12','96,400','38,200','5,100','139,700','21,400','161,100','37.3 %'],
+  ['Disipline','8','58,200','22,100','3,200','83,500','12,900','96,400','22.3 %'],
+  ['Bus Matron','9','48,600','18,700','2,900','70,200','10,800','81,000','18.8 %'],
+  ['Other','3','20,200','9,600','1,200','31,000','4,800','35,800','8.3 %']],
+ ['Total','32','223,400','88,600','12,400','374,400','57,313','431,713','100 %'],
+ 'Total Cost = Gross + employer insurance share. Other employer costs are not modelled.');
+
+R('pr-09',9,'Payroll Cost by Work Place',
+ 'The same cost view rolled up by school or branch.',
+ ['Payroll Month/Year','Emp Category','Department'],
+ [['Work Place','t'],['Employees','n'],['Gross','c'],['Deductions','c'],['Net','c'],
+  ['Employer Insurance','c'],['Total Cost','c'],['Avg Cost / Employee','c']],
+ [['Main Campus','32','374,400','45,760','328,640','57,313','431,713','13,491'],
+  ['Maadi Academy','10','—','—','—','—','—','—'],
+  ['HeadQuarter','—','—','—','—','—','—','—']],
+ ['Total','32','374,400','45,760','328,640','57,313','431,713','13,491'],
+ 'Only Main Campus has payroll data in the sample. The 31 work places come from the confirmed lookup.');
+
+R('pr-10',10,'End of Service Provision',
+ 'The accrued liability for end-of-service gratuity across all active employees.',
+ ['As At Month','Work Place','Department','Emp Category'],
+ [['Emp Code','n'],['Employee Name','t'],['Hire Date','t'],['Service Years','n'],['Monthly Basic','c'],
+  ['Provision Months','n'],['Provision Amount','c'],['Movement This Month','c']],
+ [['30912','Kareem Samir Hassan Ali','01/09/2025','0.5','8,500','0.5','4,250','708'],
+  ['19906','Tarek Nabil Fouad Saad','01/09/2025','0.5','7,200','0.5','3,600','600'],
+  ['30358','Hala Wael Sabry Kamal','01/09/2025','0.5','6,400','0.5','3,200','533'],
+  ['14538','Mervat Adel Zaki Omar','01/09/2019','6.5','4,900','6.5','31,850','408']],
+ ['','Total — 32 employees','','','223,400','','412,600','18,616'],
+ 'The gratuity formula (months of basic per year of service) is NOT defined — figures use 1 month/year as a placeholder.');
+
+R('pr-11',11,'Salary Structure Audit',
+ 'Data-quality check that finds employees who would break or distort a payroll run.',
+ ['Work Place','Department','Emp Category','Severity'],
+ [['Emp Code','n'],['Employee Name','t'],['Department','t'],['Issue','t'],['Detail','t'],['Severity','s']],
+ [['22110','—','Administartion','No salary structure','Employee active since 01/02/2026 with no components','Blocking'],
+  ['19906','Tarek Nabil Fouad Saad','Administartion','Not registered for insurance','Insurred? = No but Hire Type is insurable','Blocking'],
+  ['30358','Hala Wael Sabry Kamal','Disipline','Component without end date','Acting allowance open-ended since 01/11/2025','Warning'],
+  ['14538','Mervat Adel Zaki Omar','Bus Matron','Basic below grade minimum','4,900 vs grade minimum 5,200','Warning'],
+  ['30912','Kareem Samir Hassan Ali','Administartion','Work Place mismatch','Card says Main Campus, Hire Details says HeadQuarter','Warning']],
+ ['','5 issues — 2 blocking, 3 warnings','','','',''],
+ 'Blocking issues stop the payroll run. Note that row 5 is the real CONFLICT-01 found in your live data.');
+
+function pgPayReport(key){
+  const d=PR[key], W=/Blocking/;
+  return pageHead(d.name,d.purpose,d.code,
+    `<span class="pill prop">Proposed</span><button class="btn btn-sm" onclick="goM('pay-05','list')">← Payroll Reports</button>`)
+  +`<div class="proposed"><b>Proposed report — not in the existing system.</b> ${esc(d.note)}</div>
+   <div class="card"><div class="card-h"><h3>Criteria</h3>
+     <div class="right"><span class="pill mute">${d.crit.length} filters</span></div></div>
+    <div class="card-b">
+      <div class="grid-form">${d.crit.map(c=>/Date/.test(c)?dt(c):sel(c,critValues(c))).join('')}</div>
+      <div style="margin-top:16px;text-align:center">
+        <button class="btn btn-warn" style="min-width:170px" onclick="S.prShown=true;render()">Show</button></div>
+    </div></div>
+   ${S.prShown?`
+   <div class="card"><div class="card-h"><h3>Results</h3><div class="right">
+      ${d.extra==='bank'?`<button class="btn btn-sm btn-accent" onclick="bankFile()">Preview / download file</button>`:''}
+      <button class="btn btn-sm" onclick="toast('Export formats: Excel · PDF · CSV — to be confirmed')">Export ▾</button>
+      <button class="btn btn-sm" onclick="window.print()">Print</button></div></div>
+    <div class="card-b tight"><div class="tablewrap"><table class="grid">
+      <thead><tr>${d.cols.map(c=>`<th${c[1]==='c'?' style="text-align:right"':''}>${esc(c[0])}</th>`).join('')}</tr></thead>
+      <tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>{
+        const t=d.cols[i][1];
+        if(t==='s')return `<td><span class="pill ${W.test(v)?'bad':'warn'}">${esc(v)}</span></td>`;
+        if(t==='c')return `<td style="text-align:right;font-variant-numeric:tabular-nums">${esc(v)}</td>`;
+        return `<td>${esc(v)}</td>`;}).join('')}</tr>`).join('')}</tbody>
+      ${d.total?`<tfoot><tr>${d.total.map((v,i)=>
+        `<td${d.cols[i]&&d.cols[i][1]==='c'?' style="text-align:right"':''}>${esc(v)}</td>`).join('')}</tr></tfoot>`:''}
+    </table></div>
+    ${pager(d.rows.length+' sample rows — illustrative data',false,50)}
+    </div></div>`:''}`;
+}
+
+/* register areas, routes and codes */
+Object.values(PR).forEach(r=>{PAGE_AREA[r.key]='payroll';PAGE_CODE[r.key]=r.code;
+  NOTES[r.code]=[['asm','PROPOSED','This report does not exist in the supplied system. Columns and criteria are a design proposal.'],
+    ['tbd','—',esc(r.note)]];});
+Object.assign(AREAS,{
+ payroll:{label:'Staff → Payroll',proposed:true,items:[['pay-01','Salary Structure'],['pay-02','Payroll Run'],
+   ['pay-03','Payslip'],['pay-04','Salary Increase / Increments'],['pay-05','Payroll Reports']]},
+ financials:{label:'Employee Financials',proposed:true,items:[['fin-01','Loans & Advances'],
+   ['fin-02','Deductions & Penalties'],['fin-03','Overtime'],['fin-04','End of Service Settlement']]},
+ attendance:{label:'Staff → Attendance',proposed:true,items:[['att-01','Daily Attendance'],
+   ['att-02','Shifts & Work Schedule'],['att-03','Permissions'],['att-04','Attendance Summary']]},
+ talent:{label:'Recruitment · Performance · Training · Insurance',proposed:true,
+   items:[['rec-01','New Application'],['evl-01','Employee Evaluation'],['trn-01','Training'],['ins-01','Insurance']]}
+});
+Object.values(MOD).forEach(m=>{PAGE_AREA[m.key]=m.area;PAGE_CODE[m.key]=m.code;
+  NOTES[m.code]=[['asm','PROPOSED','This screen does not exist in the supplied system. It was designed from standard HR practice at your request; field names, lookups and rules are a proposal for review.'],
+    ['asm','REUSE','Organisational filters (Work Place · Department · Job Title · Emp Category · Stage) and the employee identity fields reuse the confirmed dimensions from PG-EMP-09, so the design stays consistent with the existing system.'],
+    ['tbd','—','Approval routing, role permissions and message texts are not defined for this screen.']];});
+
+/* ---------- generic renderer ---------- */
+function goM(key,sub){S.sub=sub||'list';go(key);}
+function pgModule(key){
+  const m=MOD[key];
+  const subs=[['list','List']].concat(m.detail?[['detail','Detail']]:[],m.form?[['form','Form']]:[]);
+  const sub=(subs.some(s=>s[0]===S.sub)?S.sub:'list');
+  let body='';
+  if(m.reportList){
+    body=`<div class="card"><div class="card-b tight"><ul class="rep-list">
+      ${m.reportList.map((r,i)=>{const k='pr-'+String(i+1).padStart(2,'0');
+        return `<li><button onclick="${PR[k]?`openPR('${k}')`:`toast('Not yet designed')`}">
+        <span class="no">${i+1}</span><span>${esc(r)}</span>
+        <span class="badge"><span class="pill prop">proposed</span></span></button></li>`;}).join('')}
+    </ul></div></div>`;
+  } else if(sub==='list') body=modList(m);
+  else if(sub==='detail') body=modDetail(m);
+  else body=modForm(m);
+  return pageHead(m.name,m.purpose,m.code,
+     `<span class="pill prop">Proposed</span><span class="pill mute">${m.scen}</span>`)
+   +`<div class="proposed"><b>Proposed screen — not in the existing system.</b> Designed at your request from standard HR practice. Organisational filters and employee identity fields reuse the confirmed dimensions of the documented system. Figures shown are illustrative (EGP).</div>`
+   +(m.reportList?'':`<div class="tabs" style="margin-bottom:16px;border:1px solid var(--line);border-radius:var(--radius)">
+       ${subs.map(([k,l])=>`<button class="${sub===k?'on':''}" onclick="goM('${key}','${k}')">${l}</button>`).join('')}</div>`)
+   +body;
+}
+function modList(m){
+  return `<div class="card"><div class="card-h"><h3>Search By</h3>
+      <div class="right"><span class="pill mute">${m.crit.length} criteria</span></div></div>
+    <div class="card-b"><div class="grid-form">${m.crit.map(c=>
+      /Date|Month/.test(c)?(/Month/.test(c)?sel(c,['2025-2026','Mar 2026','Feb 2026','Jan 2026']):dt(c))
+      :(/Code \/ Name|Applicant Name/.test(c)?txt(c):sel(c,critValues(c)))).join('')}</div>
+      <div style="margin-top:16px"><button class="btn btn-accent" onclick="toast('Search — proposed behaviour')">Search</button></div>
+    </div></div>
+   <div class="card"><div class="card-h"><h3>Results</h3><div class="right">
+      <button class="btn btn-sm btn-primary" onclick="goM('${m.key}','${m.form?'form':'list'}')">+ New</button>
+      <button class="btn btn-sm" onclick="toast('Export — proposed')">Export ▾</button></div></div>
+    <div class="card-b tight">
+      <div class="groupbar">Drag a column header here to group by that column</div>
+      <div class="tablewrap"><table class="grid">
+        <thead><tr>${m.cols.map(c=>`<th>${esc(c[0])}</th>`).join('')}</tr>
+        <tr class="filters">${m.cols.map(c=>`<td>${/Status|Type|Department|Work Place|Shift/.test(c[0])?'<select><option></option></select>':'<input>'}</td>`).join('')}</tr></thead>
+        <tbody>${m.rows.map(r=>`<tr>${r.map((v,i)=>{
+          const h=m.cols[i][0], t=m.cols[i][1];
+          if(h==='Details') return `<td><button class="icon-btn" onclick="goM('${m.key}','detail')">▤</button></td>`;
+          if(t==='Status') return `<td><span class="pill ${/Active|Approved|Applied|Posted|Completed|Present|Passed/.test(v)?'ok':/Pending|Draft|Screening|In Progress|Calculated|Scheduled|Offer/.test(v)?'warn':/Absent|Rejected|Late|Missing|Not registered|Closed|Early Leave/.test(v)?'bad':'mute'}">${esc(v)}</span></td>`;
+          if(t==='Currency') return `<td style="text-align:right;font-variant-numeric:tabular-nums">${esc(v)}</td>`;
+          return `<td>${esc(v)}</td>`;}).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+      ${pager(m.rows.length+' sample rows — illustrative data',false,30)}
+    </div></div>
+   ${m.actions?`<div class="card"><div class="card-b"><b style="font-size:12.5px">Page actions</b>
+     <div style="margin-top:8px;color:var(--text-2);font-size:13px">${esc(m.actions)}</div></div></div>`:''}`;
+}
+/* ---------- status lifecycle engine ----------
+   Turns the documented action list into real, status-driven buttons:
+   an action is only enabled when the record is in one of its "from" states. */
+let _confirmFn=null;
+function lcState(key){const m=MOD[key];return S.lc[key]||m.lifecycle.states[0];}
+function lcIsFirst(key){return lcState(key)===MOD[key].lifecycle.states[0];}
+function lcDo(key,i){
+  const a=MOD[key].lifecycle.actions[i];
+  if(a.confirm){confirmBox(a.l,a.confirm,()=>lcApply(key,i));return;}
+  lcApply(key,i);
+}
+function lcApply(key,i){
+  const m=MOD[key],a=m.lifecycle.actions[i],sts=m.lifecycle.states,st=lcState(key);
+  if(a.act==='bank'){bankFile();return;}
+  if(a.act==='register'){registerPreview();return;}
+  if(a.act==='toast'){toast(a.l+' — proposed behaviour');return;}
+  if(a.to==='prev'){const j=Math.max(0,sts.indexOf(st)-1);S.lc[key]=sts[j];toast('Rolled back to '+sts[j]);}
+  else{S.lc[key]=a.to;toast(a.t||('Status: '+a.to));}
+  render();
+}
+function confirmBox(title,text,fn){
+  _confirmFn=fn;
+  showModal(title,'',`<div style="padding:22px 24px">
+    <p style="margin:0 0 20px;font-size:14px;line-height:1.6">${esc(text)}</p>
+    <div style="display:flex;gap:9px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-warn" onclick="runConfirm()">${esc(title)}</button></div></div>`);
+}
+function runConfirm(){closeModal();const f=_confirmFn;_confirmFn=null;if(f)f();}
+
+const BANK_ROWS=[['001','30912','1900-4419-2210','KAREEM SAMIR HASSAN ALI','10,270.00'],
+ ['002','19906','1900-0372-1188','TAREK NABIL FOUAD SAAD','8,570.00'],
+ ['003','30358','1900-0627-4471','HALA WAEL SABRY KAMAL','7,400.00'],
+ ['004','14538','1900-2102-9930','MERVAT ADEL ZAKI OMAR','6,060.00']];
+function bankFileText(){
+  const L=['SEMS PAYROLL — BANK TRANSFER FILE',
+   'Run No      : PR-2026-03',
+   'Period      : Mar 2026',
+   'Work Place  : Main Campus',
+   'Payment Date: 28/03/2026',
+   'Debit A/C   : 1000-4457-8890        Currency: EGP',
+   'Generated   : '+new Date().toLocaleString(),
+   '='.repeat(78),
+   'SEQ  EMP    ACCOUNT NUMBER     EMPLOYEE NAME                        AMOUNT',
+   '-'.repeat(78)];
+  BANK_ROWS.forEach(r=>L.push(`${r[0]}  ${r[1]}  ${r[2]}  ${r[3].padEnd(35)} ${r[4].padStart(10)}`));
+  L.push('-'.repeat(78));
+  L.push(`TOTAL  ${BANK_ROWS.length} RECORDS`.padEnd(66)+'32,300.00');
+  L.push('='.repeat(78));
+  L.push('Sample of 4 of 32 lines — illustrative data.');
+  return L.join('\n');
+}
+function bankFile(){
+  showModal('Bank Transfer File','Run PR-2026-03 · Mar 2026 · Payment date 28/03/2026',
+   `<div style="padding:18px 20px">
+      <div class="mono-box">${esc(bankFileText())}</div>
+      <div style="display:flex;gap:9px;margin-top:16px;align-items:center">
+        <button class="btn btn-primary" onclick="dl('PR-2026-03-bank.txt',bankFileText())">Download .txt</button>
+        <button class="btn" onclick="toast('Format options: fixed width · CSV · bank-specific XML')">Change format</button>
+        <span style="margin-left:auto;font-size:12px;color:var(--text-3)">File layout is a proposal — confirm with the bank (OQ)</span>
+      </div></div>`);
+}
+function registerPreview(){
+  const rows=MOD['pay-02'].detail.grids[0][2];
+  showModal('Payroll Register','Run PR-2026-03 · Mar 2026 · Main Campus',
+   `<div class="tablewrap"><table class="grid">
+     <thead><tr>${MOD['pay-02'].detail.grids[0][1].map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>
+     <tbody>${rows.map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}
+       <tr style="background:var(--surface-2);font-weight:700">
+         <td colspan="2">Total — 32 employees</td><td>—</td><td>—</td><td>—</td>
+         <td>374,400</td><td>—</td><td>—</td><td>—</td><td>—</td><td>328,640</td><td></td></tr></tbody>
+   </table></div>
+   <div style="padding:14px 18px;display:flex;gap:9px;border-top:1px solid var(--line)">
+     <button class="btn btn-primary" onclick="window.print()">Print</button>
+     <button class="btn" onclick="toast('Exported')">Export ▾</button>
+     <span style="margin-left:auto;font-size:12px;color:var(--text-3)">4 of 32 sample lines shown</span></div>`);
+}
+function dl(name,text){
+  const b=new Blob([text],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);
+  toast('Downloaded '+name);
+}
+function lifebar(key){
+  const m=MOD[key],lc=m.lifecycle,st=lcState(key),idx=lc.states.indexOf(st);
+  return `<div class="lifebar">
+    <div class="steps">${lc.states.map((s,i)=>
+      `${i?'<span class="stp-arrow">→</span>':''}<span class="stp ${i<idx?'done':i===idx?'now':''}">
+        <span class="n">${i<idx?'✓':i+1}</span>${esc(s)}</span>`).join('')}</div>
+    <div class="actbar">
+      ${lc.actions.map((a,i)=>{
+        const on=a.from.includes(st);
+        const cls=a.style==='primary'?'btn-primary':a.style==='warn'?'btn-warn':a.style==='accent'?'btn-accent':a.style==='ghost'?'btn-ghost':'';
+        return `<button class="btn btn-sm ${cls}" ${on?'':'disabled'} onclick="lcDo('${key}',${i})"
+          title="${on?'':'Available when status is: '+a.from.join(' / ')}">${esc(a.l)}</button>`;}).join('')}
+      <span class="spacer">Current status: <b style="color:var(--text-2)">${esc(st)}</b></span>
+    </div></div>`;
+}
+
+function modDetail(m){
+  const d=m.detail, lc=m.lifecycle, st=lc?lcState(m.key):null, first=lc?lcIsFirst(m.key):false;
+  const card=d.card.map(([k,v])=>{
+    if(lc&&/^Status$/i.test(k))
+      return `<div class="k">${esc(k)}</div><div class="v"><span class="pill ${st===lc.states[lc.states.length-1]?'ok':st===lc.states[0]?'mute':'warn'}">${esc(st)}</span></div>`;
+    if(lc&&first&&/^(Employees|Total )/i.test(k))
+      return `<div class="k">${esc(k)}</div><div class="v" style="color:var(--text-3)">— not calculated</div>`;
+    return `<div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>`;}).join('');
+  return (lc?lifebar(m.key):'')
+   +`<div class="card"><div class="card-h"><h3>Record Information</h3></div><div class="card-b">
+     <div class="emp-kv">${card}</div>
+   </div></div>
+   ${(d.grids||[]).map((g,gi)=>`<div class="card"><div class="card-h"><h3>${esc(g[0])}</h3>
+      <div class="right">${lc&&gi===0?'':`<button class="btn btn-sm" onclick="goM('${m.key}','${m.form?'form':'detail'}')">+ Add row</button>`}</div></div>
+     <div class="card-b tight"><div class="tablewrap"><table class="grid">
+       <thead><tr>${g[1].map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>
+       <tbody>${(lc&&first&&gi===0)
+         ?`<tr><td colspan="${g[1].length}" class="empty">No lines yet — press <b>${esc(lc.actions[0].l)}</b> above to build them.</td></tr>`
+         :g[2].map(r=>`<tr>${r.map((v,ci)=>{
+             if(lc&&gi===0&&ci===r.length-1&&/Calculated|Approved/.test(v))
+               return `<td><span class="pill ${st==='Posted'?'ok':'warn'}">${esc(st==='Draft'?'—':st)}</span></td>`;
+             return `<td>${esc(v)}</td>`;}).join('')}</tr>`).join('')}</tbody>
+     </table></div></div></div>`).join('')}
+   ${lc?'':`<div class="card"><div class="card-b"><b style="font-size:12.5px">Record actions</b>
+     <div style="margin-top:8px;color:var(--text-2);font-size:13px">${esc(m.actions||'TBD')}</div></div></div>`}`;
+}
+function modForm(m){
+  const f=m.form;
+  return `<div class="card"><div class="card-h"><h3>${esc(f.title)}</h3>
+      <div class="right"><span class="pill mute">${f.fields.length} fields</span></div></div>
+    <div class="card-b">
+      <div class="grid-form c3">${f.fields.map(([l,t,r,n])=>{
+        const lab=esc(l)+(r==='Yes'?' <span class="req">*</span>':r==='Auto'?' <span class="derived">auto</span>':'');
+        let ctl;
+        if(t==='Dropdown'||t==='Multi-select'||t==='Lookup') ctl=`<select><option></option><option>${esc(n||'—')}</option></select>`;
+        else if(t==='Date') ctl='<input type="date">';
+        else if(t==='Time') ctl='<input type="time">';
+        else if(t==='Number'||t==='Currency') ctl='<input type="number">';
+        else if(t==='Textarea') ctl='<textarea rows="2"></textarea>';
+        else if(t==='File') ctl='<input type="file">';
+        else if(t==='Checkbox') ctl='<div class="radio-row"><label><input type="checkbox"> Yes</label></div>';
+        else if(t==='Radio') ctl=`<div class="radio-row">${(n||'A / B').split('·')[0].split('/').map(o=>`<label><input type="radio" name="${esc(l)}"> ${esc(o.trim())}</label>`).join('')}</div>`;
+        else if(t==='Grid') ctl='<input value="Inline grid — see Detail tab" disabled>';
+        else ctl='<input type="text"'+(r==='Auto'?' disabled':'')+'>';
+        return `<div class="f"><label>${lab}</label>${ctl}${n&&t!=='Dropdown'&&t!=='Lookup'&&t!=='Radio'?`<span class="hint">${esc(n)}</span>`:''}</div>`;}).join('')}
+      </div>
+      <div class="wiz-nav">
+        <button class="btn btn-primary" onclick="toast('Saved — proposed behaviour; message text not defined')">Save</button>
+        <button class="btn" onclick="goM('${m.key}','list')">Cancel</button>
+        <span class="sp">Required markers follow standard HR practice, not the source system</span>
+      </div>
+    </div></div>`;
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  renderChrome();
+  let html='';
+  switch(S.page){
+    case 'map':html=pgMap();break;
+    case 'emp-list':html=employeeList('emp');break;
+    case 'emp-new':html=pgWizard();break;
+    case 'emp-profile':html=pgProfile();break;
+    case 'doc-list':html=pgDocList();break;
+    case 'approve':html=pgApprove();break;
+    case 'reports':html=pgReports();break;
+    case 'rpt-01':html=pgRpt01();break;
+    case 'rpt-02':html=pgRpt02();break;
+    case 'vac-list':html=employeeList('vac');break;
+    case 'vac-record':html=pgVacRecord();break;
+    default:
+      html = MOD[S.page] ? pgModule(S.page)
+           : PR[S.page] ? pgPayReport(S.page)
+           : REPORT_DEFS[S.page] ? pgReportGeneric(S.page)
+           : pgMap();
+  }
+  $('app').innerHTML=html;
+}
+go('map');
+</script>
+</body>
+</html>

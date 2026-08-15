@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#186349">
+<title>SEMS · Employee App</title>
+<style>
+:root{
+  --brand:#1f7a5a; --brand-d:#166049; --brand-l:#e8f5f0;
+  --bg:#f2f5f9; --surface:#fff; --line:#e8ecf3; --line-2:#dbe1eb;
+  --text:#151d2b; --text-2:#5d6a7e; --text-3:#939db0;
+  --accent:#2f5fd0; --accent-l:#eaf0fd;
+  --warn:#b45309; --warn-l:#fff5e8;
+  --danger:#c0392b; --danger-l:#fdecea;
+  --ok:#1f7a5a; --ok-l:#e8f5f0;
+  --purple:#5b3a94; --purple-l:#f3edff;
+  --r:16px; --r-sm:11px;
+  --sh:0 1px 2px rgba(15,23,42,.04),0 6px 18px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{background:#dfe5ee;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input,select,textarea{font:inherit;color:var(--text)}
+
+/* ---------- phone shell ---------- */
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px 16px;gap:28px}
+.phone{width:394px;max-width:100%;height:800px;max-height:calc(100vh - 48px);background:var(--bg);
+  border-radius:34px;box-shadow:0 0 0 10px #10151f,0 0 0 12px #2a3141,0 26px 60px rgba(15,23,42,.35);
+  overflow:hidden;position:relative;display:flex;flex-direction:column}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:132px;height:24px;background:#10151f;
+  border-radius:0 0 15px 15px;z-index:30}
+.statusbar{height:34px;flex:none;background:var(--brand-d);color:#cfe6dc;display:flex;align-items:flex-end;
+  justify-content:space-between;padding:0 18px 4px;font-size:11.5px;font-weight:600;letter-spacing:.2px}
+.side-note{width:300px;font-size:13px;color:#3d4757;line-height:1.6}
+.side-note h1{font-size:20px;margin:0 0 10px;color:#151d2b}
+.side-note .chip{display:inline-block;background:var(--purple-l);color:var(--purple);font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:20px;margin-bottom:12px}
+.side-note ul{padding-left:17px;margin:10px 0}
+.side-note li{margin-bottom:6px}
+.side-note code{background:#e7ecf4;padding:1px 5px;border-radius:4px;font-size:12px}
+@media(max-width:900px){
+  .stage{padding:0;display:block}
+  .phone{width:100%;height:100vh;max-height:none;border-radius:0;box-shadow:none}
+  .notch{display:none}.side-note{display:none}
+  .statusbar{padding-top:env(safe-area-inset-top)}
+}
+
+/* ---------- app chrome ---------- */
+.appbar{flex:none;background:linear-gradient(180deg,var(--brand),var(--brand-d));color:#fff;padding:12px 18px 16px}
+.appbar.tall{padding-bottom:26px}
+.appbar-row{display:flex;align-items:center;gap:12px;min-height:32px}
+.appbar h1{margin:0;font-size:18px;font-weight:650;letter-spacing:-.2px}
+.appbar .sub{font-size:12.5px;color:#bfdcd0;margin-top:2px}
+.back{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;
+  justify-content:center;font-size:17px;flex:none}
+.avatar{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:15px;flex:none;margin-left:auto}
+.screen{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 92px;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{width:0}
+
+/* ---------- bottom nav ---------- */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:70px;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;z-index:20;
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--text-3);font-size:10.5px;font-weight:600;padding-top:8px}
+.tabbar button .ic{font-size:19px;line-height:1}
+.tabbar button.on{color:var(--brand)}
+.tabbar button.on .ic{transform:translateY(-1px)}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:12px}
+.card.flat{box-shadow:none;border:1px solid var(--line)}
+.card-t{font-size:12px;font-weight:750;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin:0 0 10px}
+.row{display:flex;align-items:center;gap:12px}
+.row+.row{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.grow{flex:1;min-width:0}
+.muted{color:var(--text-2);font-size:13px}
+.tiny{font-size:11.5px;color:var(--text-3)}
+.big{font-size:26px;font-weight:750;letter-spacing:-.6px}
+.sec{margin:18px 2px 9px;font-size:12px;font-weight:750;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)}
+.sec:first-child{margin-top:2px}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(140deg,#1f7a5a,#14523d);color:#fff;border-radius:var(--r);padding:18px;
+  margin:-42px 0 12px;box-shadow:0 10px 26px rgba(20,82,61,.25)}
+.hero .lab{font-size:11.5px;color:#a9d3c3;font-weight:650;letter-spacing:.5px;text-transform:uppercase}
+.hero .val{font-size:34px;font-weight:750;letter-spacing:-1px;margin-top:2px}
+.hero .sub{font-size:12.5px;color:#bfdcd0}
+.bar{height:7px;border-radius:6px;background:rgba(255,255,255,.22);margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:#8fe3c2;border-radius:6px}
+
+/* ---------- quick grid ---------- */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.q{background:var(--surface);border-radius:var(--r-sm);padding:13px;box-shadow:var(--sh);text-align:left}
+.q .ic{font-size:19px}
+.q .lab{font-size:11.5px;color:var(--text-3);font-weight:650;margin-top:6px}
+.q .val{font-size:17px;font-weight:700;margin-top:1px}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
+.act{background:var(--surface);border-radius:var(--r-sm);padding:12px 4px;box-shadow:var(--sh);
+  display:flex;flex-direction:column;align-items:center;gap:6px;font-size:10.5px;font-weight:650;color:var(--text-2);text-align:center}
+.act .ic{width:34px;height:34px;border-radius:11px;background:var(--brand-l);color:var(--brand);
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.act:active{transform:scale(.96)}
+
+/* ---------- list ---------- */
+.list{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:13px 15px;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item:active{background:#f7f9fc}
+.item .ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex:none;background:var(--brand-l);color:var(--brand)}
+.item .ic.b{background:var(--accent-l);color:var(--accent)}
+.item .ic.w{background:var(--warn-l);color:var(--warn)}
+.item .ic.d{background:var(--danger-l);color:var(--danger)}
+.item .ic.p{background:var(--purple-l);color:var(--purple)}
+.item .t{font-size:14.5px;font-weight:600}
+.item .s{font-size:12.5px;color:var(--text-2);margin-top:1px}
+.item .r{margin-left:auto;text-align:right;flex:none}
+.chev{color:var(--text-3);font-size:17px;margin-left:auto}
+.empty{padding:34px 16px;text-align:center;color:var(--text-3);font-size:13.5px}
+
+/* ---------- pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.pill.ok{background:var(--ok-l);color:var(--ok)}
+.pill.warn{background:var(--warn-l);color:var(--warn)}
+.pill.bad{background:var(--danger-l);color:var(--danger)}
+.pill.mute{background:#eef1f6;color:var(--text-2)}
+.pill.info{background:var(--accent-l);color:var(--accent)}
+.pill.prop{background:var(--purple-l);color:var(--purple)}
+
+/* ---------- forms ---------- */
+.f{margin-bottom:14px}
+.f label{display:block;font-size:12.5px;font-weight:650;color:var(--text-2);margin-bottom:6px}
+.f label .req{color:var(--danger)}
+.f input,.f select,.f textarea{width:100%;border:1.5px solid var(--line-2);border-radius:var(--r-sm);
+  padding:12px 13px;font-size:15px;background:#fff;outline:none;transition:.15s;appearance:none}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+.f select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%235d6a7e' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 13px center}
+.f .hint{font-size:11.5px;color:var(--text-3);margin-top:5px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chipset{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:9px 13px;border-radius:20px;border:1.5px solid var(--line-2);font-size:13px;font-weight:600;color:var(--text-2);background:#fff}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn{width:100%;padding:14px;border-radius:var(--r-sm);background:var(--brand);color:#fff;font-size:15px;font-weight:650;
+  box-shadow:0 4px 14px rgba(31,122,90,.28)}
+.btn:active{transform:scale(.99)}
+.btn.sec{background:#fff;color:var(--text);border:1.5px solid var(--line-2);box-shadow:none}
+.btn.sm{padding:10px;font-size:13.5px}
+.btn[disabled]{opacity:.45}
+.calc{background:var(--brand-l);border-radius:var(--r-sm);padding:13px 15px;display:flex;align-items:center;
+  gap:10px;margin-bottom:14px}
+.calc .n{font-size:24px;font-weight:750;color:var(--brand);line-height:1}
+.calc .l{font-size:12.5px;color:var(--brand);font-weight:600}
+
+/* ---------- misc ---------- */
+.note{background:var(--purple-l);border-left:3px solid var(--purple);border-radius:var(--r-sm);
+  padding:11px 13px;font-size:12px;color:#3f2a68;margin-bottom:12px;line-height:1.5}
+.note b{color:#2d1c4d}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--text-2);font-size:13.5px}
+.kv .v{font-weight:600;text-align:right}
+.kv.total{border-top:2px solid var(--line-2);border-bottom:0;margin-top:4px;padding-top:12px;font-size:16px}
+.kv.total .v{font-weight:750;color:var(--brand);font-size:18px}
+.tl{position:relative;padding-left:22px}
+.tl .p{position:relative;padding-bottom:16px}
+.tl .p:last-child{padding-bottom:0}
+.tl .p::before{content:'';position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--line-2)}
+.tl .p.done::before{background:var(--brand)}
+.tl .p.now::before{background:var(--warn);box-shadow:0 0 0 4px var(--warn-l)}
+.tl .p::after{content:'';position:absolute;left:-18px;top:16px;bottom:0;width:2px;background:var(--line)}
+.tl .p:last-child::after{display:none}
+.tl .t{font-size:14px;font-weight:600}
+.tl .s{font-size:12px;color:var(--text-3)}
+.seg{display:flex;background:#e9edf4;border-radius:11px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:650;color:var(--text-2)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(15,23,42,.1)}
+.month{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:14px}
+.month button{width:34px;height:34px;border-radius:11px;background:#fff;box-shadow:var(--sh);font-size:15px}
+.month .m{font-size:15px;font-weight:700;min-width:120px;text-align:center}
+.toast{position:absolute;left:16px;right:16px;bottom:86px;background:#151d2b;color:#fff;padding:13px 16px;
+  border-radius:var(--r-sm);font-size:13.5px;opacity:0;transform:translateY(12px);transition:.22s;z-index:40;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+.ring{width:96px;height:96px;flex:none;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .c b{font-size:24px;font-weight:750;line-height:1}
+.ring .c span{font-size:10.5px;color:var(--text-3);font-weight:650}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar"><span id="sbTime">9:41</span><span>SEMS · Employee</span><span>▮▮▮ 100%</span></div>
+    <div id="app" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+    <div class="tabbar" id="tabbar"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <aside class="side-note">
+    <span class="chip">EMPLOYEE SELF-SERVICE</span>
+    <h1>SEMS Employee App</h1>
+    <p>A separate mobile design for the <b>employee</b> — not the HR administrator. None of the admin screens
+       (payroll runs, approvals, employee master, reports) appear here.</p>
+    <ul>
+      <li><b>Leave</b> mirrors the documented scenario <code>STF-VAC-01</code>: 14-day balance, the same seven
+          bilingual leave types, and inclusive calendar-day counting.</li>
+      <li>Everything else is a <b>proposed</b> employee view over the new HR modules.</li>
+      <li>11 screens · bottom navigation · working forms.</li>
+    </ul>
+    <p style="color:#939db0;font-size:12px;margin-top:16px">Open on a phone, or narrow the window — the frame
+       disappears and the layout goes full-screen.</p>
+  </aside>
+</div>
+
+<script>
+/* ================================================================
+   SEMS — Employee mobile app (self-service only)
+   Leave data mirrors documented scenario STF-VAC-01.
+   All other screens are proposed employee views.
+   ================================================================ */
+const ME={name:'Kareem Samir Hassan Ali',code:'30912',id:'29001010100011',job:'Administrative',
+  dept:'Administartion',wp:'Main Campus',hire:'01 September 2025',cat:'Non Teaching',
+  mobile:'01000000011',gov:'Cairo',district:'الشرابيه',initials:'AF'};
+
+const LEAVE_TYPES=[['Emergency Leave','أجازه عارضه'],['Summer Annual Leave','أجازه صيفيه اعتياديه'],
+ ['Unpaid Leave','أجازه بدون مرتب'],['Pilgrimage Leave','أجازة حج'],['Annual Leave','أجازه اعتياديه'],
+ ['Exceptional Leave','أجازه أستثنائيه'],['Omra Vaction','أجازه عمره']];
+
+const S={tab:'home',screen:'home',stack:[],month:'Mar 2026',
+  balance:14,
+  leaves:[{type:'Annual Leave',from:'12/01/2026',to:'14/01/2026',days:3,status:'Approved',by:'hr.officer'},
+          {type:'Emergency Leave',from:'03/02/2026',to:'03/02/2026',days:1,status:'Approved',by:'hr.officer'}],
+  lf:{type:'',from:'',to:'',reason:''},
+  pf:{type:'',date:'',from:'',to:'',reason:''},
+  permissions:[{type:'Personal',date:'10/03/2026',from:'13:00',to:'15:00',h:2,status:'Approved'}],
+  requests:[],
+  docs:[{n:'National ID copy',s:'Received',d:'02/09/2025'},{n:'Graduation certificate',s:'Received',d:'02/09/2025'},
+        {n:'Birth certificate',s:'Received',d:'05/09/2025'},{n:'Criminal record',s:'Missing',d:'—'},
+        {n:'Military status',s:'Missing',d:'—'},{n:'Medical check',s:'Received',d:'12/09/2025'},
+        {n:'Bank account form',s:'Received',d:'12/09/2025'},{n:'Photographs',s:'Missing',d:'—'},
+        {n:'Employment contract',s:'Received',d:'01/09/2025'}]};
+
+/* ---------- helpers ---------- */
+const $=i=>document.getElementById(i);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('on'),2400);}
+function go(s,push){if(push!==false&&S.screen!==s)S.stack.push(S.screen);S.screen=s;render();const sc=document.querySelector('.screen');if(sc)sc.scrollTop=0;}
+function back(){S.screen=S.stack.pop()||'home';render();}
+function tab(t){S.tab=t;S.stack=[];S.screen=t;render();}
+function used(){return S.leaves.filter(l=>l.status!=='Rejected'&&l.type!=='Unpaid Leave').reduce((a,l)=>a+l.days,0);}
+function remaining(){return S.balance-used();}
+function days(a,b){if(!a||!b)return 0;const d1=new Date(a),d2=new Date(b);if(isNaN(d1)||isNaN(d2))return 0;
+  return Math.max(0,Math.round((d2-d1)/864e5)+1);}
+function fmt(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${d}/${m}/${y}`;}
+function hoursBetween(a,b){if(!a||!b)return 0;const[h1,m1]=a.split(':').map(Number),[h2,m2]=b.split(':').map(Number);
+  return Math.max(0,((h2*60+m2)-(h1*60+m1))/60);}
+function statusPill(s){const c=/Approved|Received|Present|Paid|Completed/.test(s)?'ok'
+  :/Pending|Under review|Submitted/.test(s)?'warn':/Rejected|Missing|Absent/.test(s)?'bad':'mute';
+  return `<span class="pill ${c}">${esc(s)}</span>`;}
+
+/* ---------- chrome ---------- */
+function appbar(title,sub,opts={}){
+  const showBack=S.stack.length>0&&!['home','leave','attendance','payslip','more'].includes(S.screen);
+  return `<div class="appbar ${opts.tall?'tall':''}">
+    <div class="appbar-row">
+      ${showBack?`<button class="back" onclick="back()">‹</button>`:''}
+      <div class="grow"><h1>${esc(title)}</h1>${sub?`<div class="sub">${esc(sub)}</div>`:''}</div>
+      ${opts.avatar?`<div class="avatar">${ME.initials}</div>`:''}
+    </div></div>`;
+}
+const TABS=[['home','Home','⌂'],['leave','Leave','🌴'],['attendance','Attendance','🕘'],['payslip','Payslip','💳'],['more','More','☰']];
+function renderTabs(){
+  $('tabbar').innerHTML=TABS.map(([k,l,i])=>
+    `<button class="${S.tab===k?'on':''}" onclick="tab('${k}')"><span class="ic">${i}</span>${l}</button>`).join('');
+}
+
+/* ================================================================
+   SCREENS
+   ================================================================ */
+function scHome(){
+  const pend=S.requests.filter(r=>r.status==='Under review').length;
+  return appbar('Hi, Kareem','Main Campus · Administrative',{avatar:true,tall:true})
+  +`<div class="screen">
+    <div class="hero">
+      <div class="lab">Vacation balance</div>
+      <div class="val">${remaining()} <span style="font-size:16px;font-weight:600;color:#a9d3c3">of ${S.balance} days</span></div>
+      <div class="sub">Academic year 2025-2026 · ${used()} days used</div>
+      <div class="bar"><i style="width:${(remaining()/S.balance)*100}%"></i></div>
+    </div>
+    <div class="qgrid">
+      <button class="q" onclick="go('attendance')"><div class="ic">🕘</div>
+        <div class="lab">TODAY</div><div class="val">07:54 in</div></button>
+      <button class="q" onclick="go('payslip')"><div class="ic">💳</div>
+        <div class="lab">NET PAY · MAR</div><div class="val">EGP 10,270</div></button>
+      <button class="q" onclick="go('requests')"><div class="ic">📨</div>
+        <div class="lab">MY REQUESTS</div><div class="val">${pend} pending</div></button>
+      <button class="q" onclick="go('documents')"><div class="ic">📄</div>
+        <div class="lab">DOCUMENTS</div><div class="val">${S.docs.filter(d=>d.s==='Received').length} of 9</div></button>
+    </div>
+    <div class="sec">Quick actions</div>
+    <div class="actions">
+      <button class="act" onclick="go('leave-new')"><span class="ic">➕</span>Request<br>leave</button>
+      <button class="act" onclick="go('permission-new')"><span class="ic">⏱</span>Request<br>permission</button>
+      <button class="act" onclick="go('loans')"><span class="ic">💰</span>My<br>loans</button>
+      <button class="act" onclick="go('profile')"><span class="ic">👤</span>My<br>profile</button>
+    </div>
+    <div class="sec">Recent activity</div>
+    <div class="list">
+      ${S.requests.slice(0,2).map(r=>`<button class="item" onclick="go('requests')">
+        <div class="ic w">📨</div><div class="grow"><div class="t">${esc(r.title)}</div>
+        <div class="s">${esc(r.sub)}</div></div><div class="r">${statusPill(r.status)}</div></button>`).join('')}
+      <button class="item" onclick="go('leave')"><div class="ic">🌴</div>
+        <div class="grow"><div class="t">Emergency Leave</div><div class="s">03/02/2026 · 1 day</div></div>
+        <div class="r">${statusPill('Approved')}</div></button>
+      <button class="item" onclick="go('payslip')"><div class="ic b">💳</div>
+        <div class="grow"><div class="t">February payslip</div><div class="s">Paid 28/02/2026</div></div>
+        <div class="r">${statusPill('Paid')}</div></button>
+    </div>
+    <div class="note" style="margin-top:14px"><b>Employee view.</b> This app shows only what an employee needs.
+      Administration — payroll runs, approvals, the employee master and reports — stays in the desktop system.</div>
+  </div>`;
+}
+
+function scLeave(){
+  const pct=(remaining()/S.balance)*100, C=2*Math.PI*42;
+  return appbar('My Leave','Academic year 2025-2026')
+  +`<div class="screen">
+    <div class="card"><div class="row">
+      <div class="ring"><svg width="96" height="96">
+        <circle cx="48" cy="48" r="42" stroke="#e8ecf3" stroke-width="9" fill="none"/>
+        <circle cx="48" cy="48" r="42" stroke="#1f7a5a" stroke-width="9" fill="none" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${C-(C*pct/100)}"/></svg>
+        <div class="c"><b>${remaining()}</b><span>DAYS LEFT</span></div></div>
+      <div class="grow">
+        <div class="kv"><span class="k">Balance (rule)</span><span class="v">${S.balance} days</span></div>
+        <div class="kv"><span class="k">Used</span><span class="v">${used()} days</span></div>
+        <div class="kv"><span class="k">Remaining</span><span class="v">${remaining()} days</span></div>
+      </div></div>
+      <button class="btn" style="margin-top:14px" onclick="go('leave-new')">Request leave</button>
+    </div>
+    <div class="sec">My leave history</div>
+    <div class="list">${S.leaves.length?S.leaves.map(l=>`
+      <div class="item"><div class="ic ${l.status==='Under review'?'w':''}">🌴</div>
+        <div class="grow"><div class="t">${esc(l.type)}</div>
+        <div class="s">${esc(l.from)} → ${esc(l.to)} · ${l.days} day${l.days>1?'s':''}</div></div>
+        <div class="r">${statusPill(l.status)}</div></div>`).join('')
+      :'<div class="empty">No leave recorded this year.</div>'}</div>
+    <div class="note" style="margin-top:14px"><b>Matches the live system.</b> Balance, the seven leave types and the
+      inclusive day count are taken from the documented scenario <b>STF-VAC-01</b>. Unpaid Leave does not reduce the balance.</div>
+  </div>`;
+}
+
+function scLeaveNew(){
+  const f=S.lf, n=days(f.from,f.to);
+  return appbar('Request leave','Balance: '+remaining()+' days')
+  +`<div class="screen">
+    <div class="f"><label>Leave type <span class="req">*</span></label>
+      <div class="chipset">${LEAVE_TYPES.map(([en,ar])=>
+        `<button class="chip ${f.type===en?'on':''}" onclick="S.lf.type='${en}';render()" title="${ar}">${en}</button>`).join('')}</div>
+      ${f.type?`<div class="hint" dir="rtl">${esc((LEAVE_TYPES.find(t=>t[0]===f.type)||[])[1]||'')}</div>`:''}
+    </div>
+    <div class="f2">
+      <div class="f"><label>From <span class="req">*</span></label>
+        <input type="date" value="${f.from}" onchange="S.lf.from=this.value;render()"></div>
+      <div class="f"><label>To <span class="req">*</span></label>
+        <input type="date" value="${f.to}" onchange="S.lf.to=this.value;render()"></div>
+    </div>
+    <div class="calc"><div class="n">${n}</div><div class="l">day${n===1?'':'s'} requested<br>
+      <span style="font-weight:400;color:#2c7a5f">Inclusive calendar days — weekends included</span></div></div>
+    ${n>remaining()&&f.type!=='Unpaid Leave'?`<div class="note" style="background:var(--warn-l);border-left-color:var(--warn);color:#7a3c06">
+      <b>Over balance.</b> You are requesting ${n} days but only ${remaining()} remain. The request can still be
+      submitted — HR decides how the excess is treated.</div>`:''}
+    <div class="f"><label>Reason</label>
+      <textarea rows="3" placeholder="Optional" onchange="S.lf.reason=this.value"></textarea></div>
+    <div class="f"><label>Attachment</label><input type="file"></div>
+    <button class="btn" onclick="submitLeave()" ${(!f.type||!f.from||!f.to)?'disabled':''}>Submit request</button>
+    <button class="btn sec" style="margin-top:9px" onclick="back()">Cancel</button>
+  </div>`;
+}
+function submitLeave(){
+  const f=S.lf,n=days(f.from,f.to);
+  S.leaves.unshift({type:f.type,from:fmt(f.from),to:fmt(f.to),days:n,status:'Under review',by:'—'});
+  S.requests.unshift({title:'Leave request — '+f.type,sub:fmt(f.from)+' → '+fmt(f.to)+' · '+n+' days',
+    status:'Under review',date:'15/03/2026',kind:'leave'});
+  S.lf={type:'',from:'',to:'',reason:''};
+  S.stack=[];S.tab='leave';S.screen='leave';render();
+  toast('Request submitted — waiting for HR approval');
+}
+
+function scAttendance(){
+  const rows=[['15/03/2026','07:54','16:05','8.2','Present'],['14/03/2026','07:58','16:02','8.1','Present'],
+    ['13/03/2026','—','—','0','Weekend'],['12/03/2026','08:19','16:02','7.7','Late'],
+    ['11/03/2026','07:51','16:10','8.3','Present'],['10/03/2026','07:56','15:00','7.1','Permission']];
+  return appbar('My Attendance','Shift: Morning 08:00 – 16:00')
+  +`<div class="screen">
+    <div class="card"><div class="card-t">Today · 15 March 2026</div>
+      <div class="row">
+        <div class="grow"><div class="tiny">CHECK IN</div><div class="big" style="color:var(--ok)">07:54</div></div>
+        <div class="grow"><div class="tiny">CHECK OUT</div><div class="big">16:05</div></div>
+        <div class="grow"><div class="tiny">WORKED</div><div class="big">8.2<span style="font-size:14px">h</span></div></div>
+      </div>
+      <button class="btn sec sm" style="margin-top:14px" onclick="go('permission-new')">Request permission</button>
+    </div>
+    <div class="sec">March summary</div>
+    <div class="qgrid">
+      <div class="q"><div class="lab">ATTENDED</div><div class="val">22 of 22</div></div>
+      <div class="q"><div class="lab">LATE</div><div class="val">3 times · 47 min</div></div>
+      <div class="q"><div class="lab">OVERTIME</div><div class="val">0 h</div></div>
+      <div class="q"><div class="lab">PERMISSIONS</div><div class="val">2.0 h</div></div>
+    </div>
+    <div class="sec">Daily record</div>
+    <div class="list">${rows.map(r=>`<div class="item">
+      <div class="ic ${r[4]==='Late'?'w':r[4]==='Weekend'?'':r[4]==='Permission'?'b':''}">${r[4]==='Weekend'?'—':'🕘'}</div>
+      <div class="grow"><div class="t">${r[0]}</div><div class="s">${r[1]} → ${r[2]} · ${r[3]} h</div></div>
+      <div class="r">${statusPill(r[4])}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+function scPermissionNew(){
+  const f=S.pf,h=hoursBetween(f.from,f.to);
+  return appbar('Request permission','Short absence during the day')
+  +`<div class="screen">
+    <div class="f"><label>Permission type <span class="req">*</span></label>
+      <div class="chipset">${['Late Arrival','Early Leave','Personal','Official Assignment'].map(t=>
+        `<button class="chip ${f.type===t?'on':''}" onclick="S.pf.type='${t}';render()">${t}</button>`).join('')}</div></div>
+    <div class="f"><label>Date <span class="req">*</span></label>
+      <input type="date" value="${f.date}" onchange="S.pf.date=this.value;render()"></div>
+    <div class="f2">
+      <div class="f"><label>From <span class="req">*</span></label>
+        <input type="time" value="${f.from}" onchange="S.pf.from=this.value;render()"></div>
+      <div class="f"><label>To <span class="req">*</span></label>
+        <input type="time" value="${f.to}" onchange="S.pf.to=this.value;render()"></div>
+    </div>
+    <div class="calc"><div class="n">${h.toFixed(1)}</div><div class="l">hours<br>
+      <span style="font-weight:400;color:#2c7a5f">${f.type==='Official Assignment'?'Not deducted from your balance':'Deducted from your monthly permission balance'}</span></div></div>
+    <div class="f"><label>Reason <span class="req">*</span></label>
+      <textarea rows="3" onchange="S.pf.reason=this.value"></textarea></div>
+    <button class="btn" onclick="submitPermission()" ${(!f.type||!f.date||!f.from||!f.to)?'disabled':''}>Submit request</button>
+    <button class="btn sec" style="margin-top:9px" onclick="back()">Cancel</button>
+  </div>`;
+}
+function submitPermission(){
+  const f=S.pf,h=hoursBetween(f.from,f.to);
+  S.permissions.unshift({type:f.type,date:fmt(f.date),from:f.from,to:f.to,h:h,status:'Under review'});
+  S.requests.unshift({title:'Permission — '+f.type,sub:fmt(f.date)+' · '+f.from+'–'+f.to+' · '+h.toFixed(1)+' h',
+    status:'Under review',date:'15/03/2026',kind:'permission'});
+  S.pf={type:'',date:'',from:'',to:'',reason:''};
+  go('permissions',false);S.stack=['more'];
+  toast('Permission request submitted');
+}
+
+function scPermissions(){
+  return appbar('My Permissions','')
+  +`<div class="screen">
+    <button class="btn" style="margin-bottom:14px" onclick="go('permission-new')">Request permission</button>
+    <div class="list">${S.permissions.map(p=>`<div class="item">
+      <div class="ic ${p.status==='Under review'?'w':'b'}">⏱</div>
+      <div class="grow"><div class="t">${esc(p.type)}</div>
+      <div class="s">${esc(p.date)} · ${esc(p.from)}–${esc(p.to)} · ${p.h.toFixed(1)} h</div></div>
+      <div class="r">${statusPill(p.status)}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+function scPayslip(){
+  return appbar('My Payslip','')
+  +`<div class="screen">
+    <div class="month"><button onclick="toast('Previous month')">‹</button>
+      <div class="m">March 2026</div><button onclick="toast('Next month')">›</button></div>
+    <div class="hero" style="margin-top:0">
+      <div class="lab">Net pay</div><div class="val">EGP 10,270</div>
+      <div class="sub">Payment date 28/03/2026 · Bank transfer · **** 4419</div>
+    </div>
+    <div class="card"><div class="card-t">Earnings</div>
+      <div class="kv"><span class="k">Basic Salary</span><span class="v">8,500</span></div>
+      <div class="kv"><span class="k">Housing Allowance</span><span class="v">1,700</span></div>
+      <div class="kv"><span class="k">Transport Allowance</span><span class="v">900</span></div>
+      <div class="kv"><span class="k">Mobile Allowance</span><span class="v">300</span></div>
+      <div class="kv"><span class="k">Meal Allowance</span><span class="v">300</span></div>
+      <div class="kv"><span class="k">Overtime</span><span class="v">0</span></div>
+      <div class="kv total"><span class="k">Total earnings</span><span class="v">11,700</span></div>
+    </div>
+    <div class="card"><div class="card-t">Deductions</div>
+      <div class="kv"><span class="k">Social Insurance</span><span class="v">1,122</span></div>
+      <div class="kv"><span class="k">Income Tax</span><span class="v">308</span></div>
+      <div class="kv"><span class="k">Loan Installment</span><span class="v">0</span></div>
+      <div class="kv"><span class="k">Penalties</span><span class="v">0</span></div>
+      <div class="kv total"><span class="k">Total deductions</span><span class="v">1,430</span></div>
+    </div>
+    <div class="card"><div class="card-t">Year to date</div>
+      <div class="kv"><span class="k">Gross</span><span class="v">82,150</span></div>
+      <div class="kv"><span class="k">Deductions</span><span class="v">10,010</span></div>
+      <div class="kv"><span class="k">Net</span><span class="v">72,140</span></div>
+    </div>
+    <button class="btn" onclick="toast('Payslip downloaded')">Download PDF</button>
+    <button class="btn sec" style="margin-top:9px" onclick="toast('Sent to your email')">Email to me</button>
+  </div>`;
+}
+
+function scLoans(){
+  return appbar('My Loans','')
+  +`<div class="screen">
+    <div class="card">
+      <div class="row"><div class="grow"><div class="tiny">PERSONAL LOAN</div>
+        <div class="big">EGP 4,500</div><div class="muted">outstanding of 6,000</div></div>
+        <div>${statusPill('Approved')}</div></div>
+      <div class="bar" style="background:#e8ecf3"><i style="width:25%;background:var(--brand)"></i></div>
+      <div class="row" style="margin-top:12px;padding-top:12px">
+        <div class="grow"><div class="tiny">INSTALMENT</div><div style="font-weight:700">EGP 500 / month</div></div>
+        <div class="grow"><div class="tiny">PAID</div><div style="font-weight:700">3 of 12</div></div>
+        <div class="grow"><div class="tiny">ENDS</div><div style="font-weight:700">Dec 2026</div></div>
+      </div>
+    </div>
+    <div class="sec">Instalment schedule</div>
+    <div class="list">
+      ${[['1','Jan 2026','500','Deducted'],['2','Feb 2026','500','Deducted'],['3','Mar 2026','500','Deducted'],
+         ['4','Apr 2026','500','Scheduled'],['5','May 2026','500','Scheduled'],['6','Jun 2026','500','Scheduled']]
+        .map(r=>`<div class="item"><div class="ic ${r[3]==='Deducted'?'':'b'}">${r[3]==='Deducted'?'✓':r[0]}</div>
+        <div class="grow"><div class="t">${r[1]}</div><div class="s">Instalment ${r[0]} of 12</div></div>
+        <div class="r"><div style="font-weight:700">EGP ${r[2]}</div>
+        <div class="tiny">${r[3]}</div></div></div>`).join('')}
+    </div>
+    <button class="btn" style="margin-top:14px" onclick="requestLoan()">Request a new loan</button>
+  </div>`;
+}
+function requestLoan(){
+  S.requests.unshift({title:'Loan request',sub:'Draft — amount and instalments to be entered',
+    status:'Under review',date:'15/03/2026',kind:'loan'});
+  toast('Loan request started — HR will contact you');render();
+}
+
+function scProfile(){
+  const R=(k,v)=>`<div class="kv"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`;
+  return appbar('My Profile','')
+  +`<div class="screen">
+    <div class="card" style="text-align:center">
+      <div class="avatar" style="margin:0 auto 10px;width:64px;height:64px;border-radius:20px;
+        background:var(--brand-l);color:var(--brand);font-size:22px">${ME.initials}</div>
+      <div style="font-size:17px;font-weight:700">${esc(ME.name)}</div>
+      <div class="muted">${esc(ME.job)} · ${esc(ME.wp)}</div>
+      <div style="margin-top:8px">${statusPill('Active')}</div>
+    </div>
+    <div class="card"><div class="card-t">Employment</div>
+      ${R('Employee Code',ME.code)}${R('Employee ID',ME.id)}${R('Category',ME.cat)}
+      ${R('Department',ME.dept)}${R('Job Title',ME.job)}${R('Work Place',ME.wp)}${R('Hire Date',ME.hire)}
+    </div>
+    <div class="card"><div class="card-t">Contact</div>
+      ${R('Cell Phone',ME.mobile)}${R('Governerate',ME.gov)}${R('District',ME.district)}
+      ${R('Personal Email','—')}${R('School Email','—')}
+    </div>
+    <button class="btn sec" onclick="requestChange()">Request a data change</button>
+    <div class="note" style="margin-top:12px">Your data is read-only here. Any change is submitted to HR as a
+      request and applied on the employee master record.</div>
+  </div>`;
+}
+function requestChange(){
+  S.requests.unshift({title:'Profile change request',sub:'Contact details',status:'Under review',
+    date:'15/03/2026',kind:'profile'});
+  toast('Change request sent to HR');render();
+}
+
+function scDocuments(){
+  const got=S.docs.filter(d=>d.s==='Received').length;
+  return appbar('My Documents',got+' of 9 received')
+  +`<div class="screen">
+    <div class="card"><div class="row">
+      <div class="grow"><div class="tiny">DOCUMENT STATUS</div>
+        <div class="big" style="color:${got===9?'var(--ok)':'var(--danger)'}">${got} of 9</div></div>
+      <div>${statusPill(got===9?'Complete':'Incomplete')}</div></div>
+      <div class="bar" style="background:#e8ecf3"><i style="width:${got/9*100}%;background:${got===9?'var(--ok)':'var(--warn)'}"></i></div>
+    </div>
+    <div class="list">${S.docs.map((d,i)=>`<div class="item">
+      <div class="ic ${d.s==='Missing'?'d':''}">${d.s==='Missing'?'!':'📄'}</div>
+      <div class="grow"><div class="t">${esc(d.n)}</div><div class="s">${d.s==='Missing'?'Not submitted':'Received '+d.d}</div></div>
+      <div class="r">${d.s==='Missing'?`<button class="btn sm" style="padding:7px 12px;width:auto" onclick="upload(${i})">Upload</button>`:statusPill('Received')}</div>
+    </div>`).join('')}</div>
+    <div class="note" style="margin-top:14px">Allowed file types: <b>.jpg .jpeg .png .pdf</b> — the same restriction
+      as the desktop system.</div>
+  </div>`;
+}
+function upload(i){S.docs[i].s='Received';S.docs[i].d='15/03/2026';
+  S.requests.unshift({title:'Document uploaded',sub:S.docs[i].n,status:'Received',date:'15/03/2026',kind:'doc'});
+  toast(S.docs[i].n+' uploaded');render();}
+
+function scRequests(){
+  return appbar('My Requests','')
+  +`<div class="screen">
+    ${S.requests.length?`<div class="list">${S.requests.map(r=>`<div class="item">
+      <div class="ic ${r.status==='Under review'?'w':'p'}">${r.kind==='leave'?'🌴':r.kind==='permission'?'⏱':r.kind==='loan'?'💰':r.kind==='doc'?'📄':'👤'}</div>
+      <div class="grow"><div class="t">${esc(r.title)}</div><div class="s">${esc(r.sub)} · ${esc(r.date)}</div></div>
+      <div class="r">${statusPill(r.status)}</div></div>`).join('')}</div>`
+    :'<div class="list"><div class="empty">You have no requests yet.<br>Submit a leave or permission request to see it here.</div></div>'}
+    ${S.requests.length?`<div class="sec">Approval flow</div>
+    <div class="card"><div class="tl">
+      <div class="p done"><div class="t">Submitted</div><div class="s">By you · 15/03/2026</div></div>
+      <div class="p now"><div class="t">Under review</div><div class="s">Direct manager</div></div>
+      <div class="p"><div class="t">HR approval</div><div class="s">Pending</div></div>
+      <div class="p"><div class="t">Applied to your record</div><div class="s">Pending</div></div>
+    </div></div>`:''}
+  </div>`;
+}
+
+function scDevelopment(){
+  return appbar('My Development','')
+  +`<div class="screen">
+    <div class="card"><div class="card-t">Latest evaluation</div>
+      <div class="row"><div class="grow"><div class="big">86<span style="font-size:15px;color:var(--text-3)">/100</span></div>
+        <div class="muted">2025-2026 Mid-year · Periodic</div></div>
+        <div>${statusPill('Completed')}</div></div>
+      <div style="margin-top:12px">
+        <div class="kv"><span class="k">Rating</span><span class="v">Very Good</span></div>
+        <div class="kv"><span class="k">Evaluator</span><span class="v">hr.officer</span></div>
+        <div class="kv"><span class="k">Recommendation</span><span class="v">Annual increment</span></div>
+      </div>
+      <button class="btn sec sm" style="margin-top:12px" onclick="toast('Full evaluation opened')">View full evaluation</button>
+    </div>
+    <div class="sec">My training</div>
+    <div class="list">
+      <div class="item"><div class="ic p">🎓</div><div class="grow"><div class="t">Excel for administrators</div>
+        <div class="s">16–17 Mar 2026 · 8 h · 100% attended</div></div><div class="r">${statusPill('Completed')}</div></div>
+      <div class="item"><div class="ic p">🎓</div><div class="grow"><div class="t">Fire safety &amp; evacuation</div>
+        <div class="s">02 Feb 2026 · 4 h · certificate issued</div></div><div class="r">${statusPill('Completed')}</div></div>
+      <div class="item"><div class="ic b">🎓</div><div class="grow"><div class="t">Classroom management</div>
+        <div class="s">06–08 Apr 2026 · 12 h</div></div><div class="r">${statusPill('Enrolled')}</div></div>
+    </div>
+  </div>`;
+}
+
+function scMore(){
+  const it=(icon,cls,t,s,go_)=>`<button class="item" onclick="go('${go_}')">
+    <div class="ic ${cls}">${icon}</div><div class="grow"><div class="t">${t}</div><div class="s">${s}</div></div>
+    <span class="chev">›</span></button>`;
+  return appbar('More','',{avatar:true})
+  +`<div class="screen">
+    <div class="card" style="display:flex;align-items:center;gap:13px">
+      <div class="avatar" style="width:48px;height:48px;border-radius:15px;background:var(--brand-l);color:var(--brand);margin:0">${ME.initials}</div>
+      <div class="grow"><div style="font-weight:700">${esc(ME.name)}</div>
+        <div class="muted">${esc(ME.code)} · ${esc(ME.job)}</div></div>
+    </div>
+    <div class="sec">My records</div>
+    <div class="list">
+      ${it('👤','','My Profile','Personal and employment data','profile')}
+      ${it('📄','','My Documents','Required documents and uploads','documents')}
+      ${it('💰','','My Loans','Loans, advances and instalments','loans')}
+      ${it('⏱','b','My Permissions','Short absences during the day','permissions')}
+      ${it('📨','w','My Requests','Everything you have submitted','requests')}
+      ${it('🎓','p','My Development','Evaluation and training','development')}
+    </div>
+    <div class="sec">App</div>
+    <div class="list">
+      <button class="item" onclick="toast('Language switch is a proposal')"><div class="ic">🌐</div>
+        <div class="grow"><div class="t">Language</div><div class="s">English</div></div><span class="chev">›</span></button>
+      <button class="item" onclick="toast('Notification settings')"><div class="ic">🔔</div>
+        <div class="grow"><div class="t">Notifications</div><div class="s">Approvals and payslips</div></div><span class="chev">›</span></button>
+      <button class="item" onclick="toast('Password change')"><div class="ic">🔒</div>
+        <div class="grow"><div class="t">Change password</div><div class="s">Last changed 01/09/2025</div></div><span class="chev">›</span></button>
+      <button class="item" onclick="toast('Logged out')"><div class="ic d">↪</div>
+        <div class="grow"><div class="t" style="color:var(--danger)">Log out</div></div></button>
+    </div>
+    <div class="note" style="margin-top:14px"><b>Scope.</b> Employee self-service only. Approving other people’s
+      requests, running payroll, maintaining the employee master and reporting all stay in the desktop system.</div>
+  </div>`;
+}
+
+/* ---------- router ---------- */
+const SCREENS={home:scHome,leave:scLeave,'leave-new':scLeaveNew,attendance:scAttendance,
+  'permission-new':scPermissionNew,permissions:scPermissions,payslip:scPayslip,loans:scLoans,
+  profile:scProfile,documents:scDocuments,requests:scRequests,development:scDevelopment,more:scMore};
+function render(){
+  $('app').innerHTML=(SCREENS[S.screen]||scHome)();
+  renderTabs();
+}
+setInterval(()=>{const d=new Date();
+  $('sbTime').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');},1000);
+render();
+</script>
+</body>
+</html>
